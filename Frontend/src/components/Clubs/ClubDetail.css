@@ -1,0 +1,394 @@
+/* ══════════════════════════════════════════════
+   CLUB DETAIL PAGE
+══════════════════════════════════════════════ */
+.cd-page {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #0f172a 55%, #020617 100%);
+}
+
+/* ── Loading ── */
+.cd-loading {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.cd-loading p { font-size: 0.95rem; }
+
+.cd-spin {
+  animation: cd-spin 1s linear infinite;
+  color: #3B82F6;
+}
+
+@keyframes cd-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ══════════════════════════
+   BANNER
+══════════════════════════ */
+.cd-banner {
+  position: relative;
+  height: 420px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+@media (min-width: 768px) {
+  .cd-banner { height: 500px; }
+}
+
+.cd-banner-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: blur(5px) brightness(0.5) saturate(1.3);
+  transform: scale(1.06);
+}
+
+.cd-banner-gradient {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 0%, #facc15, #3B82F6 40%, #b91c1c);
+}
+
+.cd-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 23, 42, 0.15) 0%,
+    rgba(15, 23, 42, 0.6) 55%,
+    rgba(15, 23, 42, 0.96) 100%
+  );
+}
+
+.cd-banner-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* ── Back ── */
+.cd-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+  backdrop-filter: blur(8px);
+  margin-bottom: 1.5rem;
+  font-family: inherit;
+}
+
+.cd-back-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Logo ── */
+.cd-logo-wrap {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid rgba(59, 130, 246, 0.9);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15), 0 12px 30px rgba(0,0,0,0.5);
+  background: radial-gradient(circle at 30% 0%, #facc15, #3B82F6 40%, #b91c1c);
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .cd-logo-wrap { width: 112px; height: 112px; }
+}
+
+.cd-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cd-logo-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cd-logo-fallback span {
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: #fff;
+}
+
+/* ── Club Name / Moto ── */
+.cd-club-name {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.15;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  margin-bottom: 0.35rem;
+}
+
+@media (min-width: 768px) {
+  .cd-club-name { font-size: 2.8rem; }
+}
+
+.cd-club-moto {
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.65);
+  font-style: italic;
+  margin-bottom: 0.9rem;
+}
+
+/* ── Meta pills ── */
+.cd-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cd-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(255,255,255,0.11);
+  border: 1px solid rgba(255,255,255,0.2);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.32rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.cd-meta-pill svg { color: #fbbf24; }
+
+.cd-meta-pill--approved {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+/* ══════════════════════════
+   BODY
+══════════════════════════ */
+.cd-body {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.75rem 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ── Stats Row ── */
+.cd-stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.cd-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(59, 130, 246, 0.07);
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  border-radius: 1.2rem;
+  padding: 1.5rem 1rem;
+  text-align: center;
+}
+
+.cd-stat-card svg { color: #3B82F6; }
+
+.cd-stat-num {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+}
+
+.cd-stat-lbl {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.45);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Sections ── */
+.cd-section {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 1.5rem;
+  padding: 1.75rem 2rem;
+}
+
+.cd-section-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cd-section-icon { color: #3B82F6; }
+
+/* ── About ── */
+.cd-description {
+  font-size: 0.93rem;
+  color: rgba(255,255,255,0.72);
+  line-height: 1.75;
+}
+
+/* ── Leaders Grid ── */
+.cd-leaders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 1rem;
+}
+
+.cd-leader-card {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 1.1rem;
+  padding: 1rem 1.25rem;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.cd-leader-card:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(249,115,22,0.3);
+}
+
+/* Founder styling gets an accent */
+.cd-leader-card--founder {
+  border-color: rgba(59, 130, 246, 0.25);
+  background: rgba(59, 130, 246, 0.06);
+}
+
+/* ── Avatar ── */
+.cd-leader-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 0%, #facc15, #3B82F6 40%, #b91c1c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid rgba(59, 130, 246, 0.5);
+}
+
+.cd-leader-avatar--founder {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(249,115,22,0.18);
+}
+
+.cd-leader-avatar span {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #fff;
+}
+
+/* ── Leader Info ── */
+.cd-leader-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.cd-leader-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cd-leader-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #fb923c;
+  font-size: 0.73rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* ── Gallery ── */
+.cd-gallery-section {
+  border-style: dashed;
+  border-color: rgba(255,255,255,0.1);
+}
+
+.cd-gallery-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.cd-gallery-header svg { color: #3B82F6; }
+
+.cd-gallery-header .cd-section-title { margin-bottom: 0; }
+
+.cd-gallery-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1rem;
+  gap: 0.55rem;
+  text-align: center;
+  color: rgba(255,255,255,0.25);
+  margin-top: 1rem;
+}
+
+.cd-gallery-placeholder svg {
+  opacity: 0.25;
+  margin-bottom: 0.5rem;
+}
+
+.cd-gallery-placeholder p {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.35);
+  margin: 0;
+}
+
+.cd-gallery-placeholder span {
+  font-size: 0.8rem;
+}

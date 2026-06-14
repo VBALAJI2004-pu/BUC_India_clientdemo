@@ -1,0 +1,223 @@
+.club-management {
+  color: #fff;
+}
+
+.club-section {
+  margin-top: 30px;
+}
+
+.club-table {
+  border-radius: 10px;
+  border: 1px solid #333;
+  overflow: hidden;
+  background: rgba(15, 15, 15, 0.9);
+}
+
+.club-table-header {
+  display: grid;
+  grid-template-columns: 2.4fr 1fr 2fr 1fr 1.4fr;
+  gap: 10px;
+  padding: 12px 18px;
+  background: rgba(17, 24, 39, 0.95);
+  border-bottom: 1px solid #333;
+  font-size: 13px;
+  font-weight: 600;
+  color: #cbd5f5;
+}
+
+.club-row {
+  display: grid;
+  grid-template-columns: 2.4fr 1fr 2fr 1fr 1.4fr;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #1f2933;
+  align-items: center;
+}
+
+.club-row:nth-child(even) {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.club-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.club-logo-small {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: radial-gradient(circle at 30% 0%, #facc15 0%, #3B82F6 35%, #b91c1c 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 15px;
+  color: #111827;
+  border: 2px solid rgba(59, 130, 246, 0.8);
+}
+
+.club-logo-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.club-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #f9fafb;
+}
+
+.club-meta {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.club-cell {
+  font-size: 13px;
+  color: #e5e7eb;
+}
+
+.club-moto {
+  font-size: 12px;
+  color: #e5e7eb;
+}
+
+.club-status-approved,
+.club-status-pending,
+.club-status-rejected {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.club-status-approved {
+  background: rgba(22, 163, 74, 0.18);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.7);
+}
+
+.club-status-pending {
+  background: rgba(234, 179, 8, 0.22);
+  color: #eab308;
+  border: 1px solid rgba(234, 179, 8, 0.75);
+}
+
+.club-status-rejected {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(248, 113, 113, 0.9);
+}
+
+.club-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.status-btn {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.status-btn.approve {
+  background: rgba(34, 197, 94, 0.2);
+  color: #bbf7d0;
+}
+
+.status-btn.approve:hover:not(:disabled) {
+  background: rgba(22, 163, 74, 0.3);
+}
+
+.status-btn.reject {
+  background: rgba(248, 113, 113, 0.18);
+  color: #fecaca;
+}
+
+.status-btn.reject:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.28);
+}
+
+.status-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.club-exits {
+  border-radius: 10px;
+  border: 1px solid #333;
+  background: rgba(15, 15, 15, 0.9);
+  padding: 16px 16px 10px;
+}
+
+.exit-row {
+  border-radius: 8px;
+  border: 1px solid #1f2937;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: rgba(17, 24, 39, 0.85);
+}
+
+.exit-main {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.exit-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f9fafb;
+}
+
+.exit-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.exit-reason {
+  font-size: 12px;
+  color: #e5e7eb;
+}
+
+.exit-reason strong {
+  color: #3B82F6;
+  margin-right: 4px;
+}
+
+@media (max-width: 900px) {
+  .club-table-header {
+    display: none;
+  }
+
+  .club-row {
+    grid-template-columns: 1.7fr 1.2fr;
+    grid-template-rows: auto auto;
+  }
+
+  .club-cell:nth-child(2),
+  .club-cell:nth-child(3),
+  .club-cell:nth-child(4),
+  .club-cell:nth-child(5) {
+    font-size: 12px;
+  }
+}
+

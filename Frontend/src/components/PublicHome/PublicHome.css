@@ -1,0 +1,6 @@
+.public-home {
+  /* This file intentionally left minimal because the component
+     is already styled heavily with Tailwind utility classes.
+     It only provides a hook for any future custom overrides. */
+}
+

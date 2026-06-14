@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@200..700&family=Rajdhani:wght@300;400;500;600;700&family=Manrope:wght@200..800&family=Audiowide&family=Righteous&family=Roboto:wght@300;400;500;600;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-carbon: #050505;
+  --color-carbon-light: #111111;
+  --color-copper: #C19A6B;
+  --color-steel: #E5E7EB;
+  --color-steel-dim: #9CA3AF;
+}
+
+@layer base {
+  body {
+    @apply bg-carbon text-steel antialiased selection:bg-copper selection:text-black;
+    font-family: 'Rajdhani', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Anton', sans-serif;
+  }
+
+  /* Custom Scrollbar to match New Frame */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-carbon;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-copper/20 hover:bg-copper transition-colors rounded-full;
+  }
+}
+
+/* Custom bike cursor for desktop (place image in /public as /buc-bike-cursor.png) */
+@media (min-width: 1024px) and (pointer: fine) {
+  body,
+  a,
+  button,
+  input,
+  textarea,
+  select {
+    cursor: url("/buc-bike-cursor.png") 16 16, auto;
+  }
+}
+
+@layer components {
+  /* Metallica Button Gradient as requested */
+  .btn-metallica {
+    @apply relative overflow-hidden bg-metallic-copper text-black font-heading tracking-widest uppercase py-4 px-8 transform transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-copper-glow hover:shadow-copper-strong border-none;
+    background-size: 200% 200%;
+  }
+
+  .btn-metallica::after {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-500 bg-white/20;
+  }
+
+  .btn-metallica:hover::after {
+    @apply opacity-100;
+  }
+}
+
+@layer utilities {
+  .outline-title {
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.15);
+    color: transparent;
+  }
+  
+  .tracking-ultra {
+    letter-spacing: 0.25em;
+  }
+
+  .text-gradient-copper {
+    @apply bg-copper-gradient bg-clip-text text-transparent animate-shine;
+    background-size: 200% auto;
+  }
+}
+
+/* GSAP/Lenis Smooth Scroll */
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}

@@ -1,0 +1,377 @@
+/* ══════════════════════════════════════════════
+   CLUB COLLABORATE PAGE
+══════════════════════════════════════════════ */
+.collab-page {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #0f172a 0%, #020617 100%);
+}
+
+/* ── Page Header ── */
+.collab-header {
+  background: radial-gradient(
+      130% 130% at 0% 0%,
+      rgba(59, 130, 246, 0.12) 0%,
+      transparent 55%
+    ),
+    rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 2.5rem 1.75rem 3rem;
+}
+
+.collab-header-inner {
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+/* ── Back btn ── */
+.collab-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  padding: 0.42rem 0.95rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  margin-bottom: 1.75rem;
+  font-family: inherit;
+}
+
+.collab-back-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Header icon & title ── */
+.collab-header-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 1.25rem;
+  background: linear-gradient(135deg, #3B82F6, #dc2626);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 12px 34px rgba(59, 130, 246, 0.35);
+}
+
+.collab-heading {
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.15;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .collab-heading { font-size: 3rem; }
+}
+
+.collab-heading-accent {
+  background: linear-gradient(to right, #3B82F6, #dc2626);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.collab-subheading {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.65;
+  max-width: 38rem;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Auth warning ── */
+.collab-auth-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 0.85rem;
+  padding: 0.65rem 1rem;
+  font-size: 0.84rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 0.5rem;
+}
+
+.collab-auth-warning svg { color: #3B82F6; flex-shrink: 0; }
+
+.collab-login-link {
+  color: #3B82F6;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.collab-login-link:hover { color: #fb923c; }
+
+/* ══════════════════════════
+   FORM BODY
+══════════════════════════ */
+.collab-body {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.75rem 5rem;
+}
+
+.collab-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Cards ── */
+.collab-card {
+  background: rgba(255, 255, 255, 0.975);
+  border-radius: 1.5rem;
+  padding: 1.75rem 1.75rem 1.5rem;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.28);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.collab-card-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.collab-card-title svg { color: #3B82F6; }
+
+.collab-card-subtitle {
+  font-size: 0.83rem;
+  color: #64748b;
+  margin-bottom: 1.1rem;
+  margin-top: -0.5rem;
+  line-height: 1.5;
+}
+
+/* ── Fields ── */
+.collab-field-group {
+  margin-bottom: 0.9rem;
+}
+
+.collab-field-row {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .collab-field-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.collab-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.3rem;
+}
+
+.collab-requiindigo {
+  color: #f43f5e;
+  margin-left: 0.1rem;
+}
+
+.collab-input,
+.collab-textarea {
+  width: 100%;
+  border-radius: 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.65);
+  background: #f8fafc;
+  color: #0f172a;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.86rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  font-family: inherit;
+}
+
+.collab-input:focus,
+.collab-textarea:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+  background: #fff;
+}
+
+.collab-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+/* ── Admin list ── */
+.collab-admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.collab-admin-row {
+  display: grid;
+  gap: 0.5rem;
+  background: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  border-radius: 1rem;
+  padding: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .collab-admin-row {
+    grid-template-columns: 1.4fr 1fr 1.4fr 1.1fr auto;
+    align-items: center;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    gap: 0.6rem;
+  }
+}
+
+.collab-admin-remove {
+  background: none;
+  border: none;
+  color: #e11d48;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.3rem 0.4rem;
+  font-family: inherit;
+  border-radius: 0.5rem;
+  transition: background 0.15s ease;
+}
+
+.collab-admin-remove:hover { background: rgba(225, 29, 72, 0.07); }
+
+.collab-add-admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(15, 23, 42, 0.06);
+  border: 1px dashed rgba(148, 163, 184, 0.6);
+  color: #475569;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  font-family: inherit;
+  align-self: flex-start;
+}
+
+.collab-add-admin-btn:hover {
+  background: rgba(59, 130, 246, 0.06);
+  border-color: rgba(59, 130, 246, 0.55);
+  color: #ea580c;
+}
+
+/* ── Upload tiles ── */
+.collab-upload-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .collab-upload-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.collab-upload-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1.25rem 1rem;
+  border-radius: 1.1rem;
+  border: 2px dashed rgba(59, 130, 246, 0.5);
+  background: #fffbeb;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.collab-upload-tile:hover {
+  background: rgba(59, 130, 246, 0.05);
+  border-color: #3B82F6;
+}
+
+.collab-upload-tile input[type="file"] {
+  display: none;
+}
+
+.collab-upload-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3B82F6;
+}
+
+.collab-upload-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.collab-upload-filename {
+  font-size: 0.72rem;
+  color: #64748b;
+  word-break: break-all;
+}
+
+/* ── Submit ── */
+.collab-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  width: 100%;
+  background: linear-gradient(135deg, #3B82F6, #dc2626);
+  color: #fff;
+  border: none;
+  border-radius: 1.1rem;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.35);
+  font-family: inherit;
+}
+
+.collab-submit-btn:hover:not(:disabled) {
+  filter: brightness(1.07);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(59, 130, 246, 0.45);
+}
+
+.collab-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+  box-shadow: none;
+}
+
+.collab-submit-note {
+  text-align: center;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: -0.5rem;
+}
