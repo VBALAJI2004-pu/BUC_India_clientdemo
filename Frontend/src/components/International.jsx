@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Globe, Shield, Zap, ArrowRight } from "lucide-react";
 import { internationalProfileService } from "../services/api";
-import ProfileContentModal from "./ProfileContentModal";
+import ProfileContentModal, { SocialLinks } from "./ProfileContentModal";
 
 const International = () => {
   const [profiles, setProfiles] = useState([]);
@@ -79,15 +79,13 @@ const International = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {profiles.map((profile) => (
-                <button
+                <article
                   key={profile._id}
-                  type="button"
-                  onClick={() => setSelectedProfile(profile)}
-                  className="group text-left p-6 border border-white/5 bg-carbon-light hover:border-copper/30 transition-all duration-500 hover:-translate-y-1"
+                  className="group flex flex-col p-6 border border-white/5 bg-carbon-light hover:border-copper/30 transition-all duration-500"
                 >
                   <div className="aspect-square mb-6 overflow-hidden border border-white/10">
                     <img
-                      src={profile.profilePhoto}
+                      src={profile.profilePhoto || "/logo.jpg"}
                       alt={profile.fullName}
                       loading="lazy"
                       decoding="async"
@@ -103,14 +101,24 @@ const International = () => {
                     {profile.fullName}
                   </h3>
                   {profile.designation && (
-                    <p className="font-body text-[10px] text-steel-dim uppercase tracking-widest mb-4">
+                    <p className="font-body text-[10px] text-steel-dim uppercase tracking-widest mb-3">
                       {profile.designation}
                     </p>
                   )}
                   {profile.shortBio && (
-                    <p className="font-text text-steel-dim text-sm line-clamp-3">{profile.shortBio}</p>
+                    <p className="font-text text-steel-dim text-sm line-clamp-3 mb-4 flex-grow">
+                      {profile.shortBio}
+                    </p>
                   )}
-                </button>
+                  <SocialLinks item={profile} className="mb-5" />
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProfile(profile)}
+                    className="w-full py-3 border border-white/10 font-body text-[10px] uppercase tracking-widest hover:bg-copper hover:text-carbon hover:border-copper transition-all duration-300"
+                  >
+                    Read More
+                  </button>
+                </article>
               ))}
             </div>
           )}

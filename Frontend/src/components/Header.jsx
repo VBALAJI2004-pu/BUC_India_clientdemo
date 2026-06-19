@@ -12,7 +12,16 @@ const navigation = [
   { name: "USERS", path: "/users", label: "COMMUNITY" },
   { name: "FORUM", path: "/forum", label: "DISCUSSIONS" },
   { name: "CLUBS", path: "/clubs", label: "NETWORK" },
-  { name: "INTERNATIONAL", path: "/international", label: "GLOBAL" },
+  {
+    name: "OUR SAFETY INFLUENCERS",
+    path: "/safety-influencers",
+    label: "ADVOCATES",
+  },
+  {
+    name: "INTERNATIONAL INFLUENCERS",
+    path: "/international",
+    label: "GLOBAL",
+  },
 ];
 
 // Animated Menu Bar — a single line of the hamburger
@@ -60,15 +69,8 @@ const Header = () => {
         />
       </div>
 
-      {/* Premium Menu Trigger Wrapper */}
-      <div className="fixed top-5 right-5 sm:top-10 sm:right-10 z-[1001] flex items-center gap-3 sm:gap-6">
-        <button
-          onClick={() => navigate("/safety")}
-          className="hidden sm:block font-body text-[9px] uppercase tracking-[0.2em] text-copper border border-copper/30 px-3 py-2 hover:bg-copper hover:text-carbon transition-all duration-300"
-        >
-          Safety Influencers
-        </button>
-        {/* Hover Side Label */}
+      {/* Menu trigger — fixed top-right (CLOSE via hamburger when open) */}
+      <div className="fixed top-5 right-5 sm:top-10 sm:right-10 z-[1001] flex items-center gap-3 sm:gap-4">
         <AnimatePresence>
           {isHovered && (
             <motion.span
@@ -90,7 +92,7 @@ const Header = () => {
           className={`relative flex flex-col items-end justify-center gap-[7px] w-12 h-12 interactive-item group ${
             isOpen ? "text-copper" : "text-white"
           }`}
-          aria-label="Toggle Menu"
+          aria-label={isOpen ? "Close menu" : "Open menu"}
         >
           {/* L Corners */}
           <div className="absolute -inset-3">
@@ -160,7 +162,7 @@ const Header = () => {
             animate={{ y: 0 }}
             exit={{ y: "-100%" }}
             transition={{ duration: 0.8, ease: [0.7, 0, 0.3, 1] }}
-            className="fixed inset-0 bg-carbon z-[1000] flex flex-col md:flex-row md:items-center md:justify-center overflow-x-hidden"
+            className="fixed inset-0 bg-carbon z-[1000] flex flex-col min-h-0 overflow-hidden"
           >
             {/* Background Ghost Text */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden select-none">
@@ -203,37 +205,36 @@ const Header = () => {
               }
             `}</style>
 
-            {/* Scrollable Nav Area (mobile: flex-1 scroll; desktop: centered) */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden md:overflow-visible md:flex-none w-full md:flex md:items-center md:justify-center">
-            <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-10 pt-24 pb-6 md:pt-0 md:pb-0 grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-12 items-center">
-              {/* Navigation Links (Left Pane) */}
-              <nav className="md:col-span-7 flex flex-col items-start gap-1 md:gap-4">
+            {/* Scrollable Nav Area — all breakpoints */}
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden w-full flex items-start md:items-center justify-center overscroll-contain">
+            <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-10 pt-24 pb-8 md:py-12 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-12 items-start md:items-center">
+              {/* Navigation Links (Left Pane) — scrollable list */}
+              <nav className="md:col-span-7 flex flex-col items-start gap-1 md:gap-2 w-full max-h-none md:max-h-[65vh] md:overflow-y-auto md:overscroll-contain md:pr-4">
                 {navigation.map((item, index) => (
                   <div
                     key={item.name}
                     ref={(el) => (linksRef.current[index] = el)}
-                    className="overflow-hidden"
+                    className="overflow-hidden w-full shrink-0"
                   >
                     <motion.button
                       onClick={() => handleNavigate(item.path)}
                       initial={{ y: 24, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
-                      transition={{ duration: 0.35, delay: 0.08 + index * 0.05, ease: [0.2, 0, 0, 1] }}
-                      className={`nav-link-btn group flex items-center gap-12 interactive-item ${
+                      transition={{ duration: 0.35, delay: 0.08 + index * 0.04, ease: [0.2, 0, 0, 1] }}
+                      className={`nav-link-btn group flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-8 interactive-item w-full text-left ${
                         location.pathname === item.path ? "active" : ""
                       }`}
                     >
                       <span
-                        className={`font-heading text-[10vw] sm:text-5xl md:text-7xl transition-all duration-500 ease-[cubic-bezier(0.7,0,0.3,1)] ${
+                        className={`font-heading text-[8vw] sm:text-4xl md:text-5xl lg:text-6xl transition-all duration-500 ease-[cubic-bezier(0.7,0,0.3,1)] leading-tight ${
                           location.pathname === item.path
-                            ? "text-copper tracking-[0.1em] md:tracking-[0.2em]"
-                            : "text-white/40 group-hover:text-white group-hover:tracking-[0.1em] md:group-hover:tracking-[0.2em]"
+                            ? "text-copper tracking-[0.05em] md:tracking-[0.15em]"
+                            : "text-white/40 group-hover:text-white group-hover:tracking-[0.05em] md:group-hover:tracking-[0.15em]"
                         }`}
                       >
                         {item.name}
                       </span>
-                      {/* Hover reveal sub-text */}
-                      <span className="opacity-0 group-hover:opacity-100 transition-all duration-300 font-body text-[10px] tracking-[0.3em] text-copper uppercase">
+                      <span className="opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 font-body text-[10px] tracking-[0.3em] text-copper uppercase">
                         {item.label}
                       </span>
                     </motion.button>

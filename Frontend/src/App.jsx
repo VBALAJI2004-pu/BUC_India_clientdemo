@@ -27,6 +27,7 @@ const Users = lazy(() => import("./components/Users.jsx"));
 const Forum = lazy(() => import("./components/Forum.jsx"));
 const MembershipApplication = lazy(() => import("./components/MembershipApplication.jsx"));
 const Safety = lazy(() => import("./components/Safety.jsx"));
+const SafetyInfluencers = lazy(() => import("./components/SafetyInfluencers.jsx"));
 const Clubs = lazy(() => import("./components/Clubs/Clubs.jsx"));
 const ClubCollaborate = lazy(() => import("./components/Clubs/ClubCollaborate.jsx"));
 const ClubDetail = lazy(() => import("./components/Clubs/ClubDetail.jsx"));
@@ -140,6 +141,7 @@ function App() {
                   <Route path="/users" element={<Users />} />
                   <Route path="/forum" element={<Forum />} />
                   <Route path="/safety" element={<Safety />} />
+                  <Route path="/safety-influencers" element={<SafetyInfluencers />} />
                   <Route path="/membership-apply" element={<MembershipApplication />} />
                   <Route path="/clubs" element={<Clubs />} />
                   <Route
