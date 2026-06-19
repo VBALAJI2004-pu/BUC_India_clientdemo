@@ -4,6 +4,7 @@ const Hero = lazy(() => import("./Hero.jsx"));
 const Marquee = lazy(() => import("./Marquee.jsx"));
 const About = lazy(() => import("./About.jsx"));
 const StatsStrip = lazy(() => import("./StatsStrip.jsx"));
+const InfluencerSpotlight = lazy(() => import("./InfluencerSpotlight.jsx"));
 const Safety = lazy(() => import("./Safety.jsx"));
 const EventPromotionBanner = lazy(() => import("./EventPromotionBanner.jsx"));
 
@@ -20,6 +21,7 @@ const HomePage = () => (
     <Marquee />
     <About />
     <StatsStrip />
+    <InfluencerSpotlight />
     <Safety />
   </Suspense>
 );
