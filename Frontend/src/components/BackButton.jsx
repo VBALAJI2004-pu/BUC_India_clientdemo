@@ -1,8 +1,8 @@
 import { ArrowLeft } from "lucide-react";
 import { useSmartBack } from "../utils/navigation";
 
-const BackButton = ({ label = "Back", className = "" }) => {
-  const handleBack = useSmartBack("/");
+const BackButton = ({ label = "Back", fallback = "/", className = "" }) => {
+  const handleBack = useSmartBack(fallback);
 
   return (
     <button

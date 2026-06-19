@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   getPublicClubs,
+  getPublicClubDetail,
   getAllClubs,
   createClubRequest,
   updateClubStatus,
@@ -13,6 +14,7 @@ const router = express.Router();
 
 // Public
 router.get('/public', getPublicClubs);
+router.get('/public/:slug', getPublicClubDetail);
 
 // Public - collaboration request (multi-part with images)
 router.post(

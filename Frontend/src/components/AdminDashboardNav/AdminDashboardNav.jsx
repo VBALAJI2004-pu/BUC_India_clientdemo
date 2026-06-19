@@ -21,7 +21,8 @@ import {
   Bell,
   Star,
   Globe,
-  Shield
+  Shield,
+  MessageSquare,
 } from "lucide-react";
 import DashboardHome from "../DashboardHome/DashboardHome";
 import EventManagement from "../EventManagement/EventManagement";
@@ -32,6 +33,8 @@ import ClubManagement from "../ClubManagement/ClubManagement.jsx";
 import ViewTalents from "../ViewTalents/ViewTalents.jsx";
 import InternationalProfileManagement from "../InternationalProfileManagement/InternationalProfileManagement.jsx";
 import SafetyInfluencerManagement from "../SafetyInfluencerManagement/SafetyInfluencerManagement.jsx";
+import MembershipApplicationManagement from "../MembershipApplicationManagement/MembershipApplicationManagement.jsx";
+import ForumManagement from "../ForumManagement/ForumManagement.jsx";
 import { authService, profileService } from "../../services/api";
 
 const logo = "/logo.jpg";
@@ -75,6 +78,7 @@ const AdminDashboard = () => {
     { path: "/admin/dashboard", name: "Overview", icon: <LayoutDashboard size={20} />, end: true },
     { path: "/admin/events", name: "Events", icon: <Calendar size={20} /> },
     { path: "/admin/registrations", name: "Event Registrations", icon: <FileText size={20} /> },
+    { path: "/admin/membership-applications", name: "Membership Apps", icon: <FileText size={20} /> },
     { path: "/admin/users", name: "Users", icon: <User size={20} /> },
     { path: "/admin/talents", name: "Talents", icon: <Star size={20} /> },
     { path: "/admin/gallery", name: "Gallery", icon: <ImageIcon size={20} /> },
@@ -82,6 +86,7 @@ const AdminDashboard = () => {
     { path: "/admin/clubs", name: "Clubs", icon: <Bike size={20} /> },
     { path: "/admin/international-profiles", name: "International Profiles", icon: <Globe size={20} /> },
     { path: "/admin/safety-influencers", name: "Safety Influencers", icon: <Shield size={20} /> },
+    { path: "/admin/forum", name: "Forum", icon: <MessageSquare size={20} /> },
   ];
 
   const SidebarContent = () => (
@@ -245,6 +250,7 @@ const AdminDashboard = () => {
             <Route path="dashboard" element={<DashboardHome />} />
             <Route path="events" element={<EventManagement />} />
             <Route path="registrations" element={<ViewRegistrations />} />
+            <Route path="membership-applications" element={<MembershipApplicationManagement />} />
             <Route path="users" element={<ViewUsers />} />
             <Route path="talents" element={<ViewTalents />} />
             <Route path="gallery" element={<GalleryManagement />} />
@@ -252,6 +258,7 @@ const AdminDashboard = () => {
             <Route path="clubs" element={<ClubManagement />} />
             <Route path="international-profiles" element={<InternationalProfileManagement />} />
             <Route path="safety-influencers" element={<SafetyInfluencerManagement />} />
+            <Route path="forum" element={<ForumManagement />} />
           </Routes>
         </main>
       </div>

@@ -9,7 +9,8 @@ const navigation = [
   { name: "EVENTS", path: "/events", label: "EXPERIENCE" },
   { name: "GALLERY", path: "/gallery", label: "VISUALS" },
   { name: "MEMBERS", path: "/members", label: "BROTHERHOOD" },
-  { name: "FORUM", path: "/forum", label: "COMMUNITY" },
+  { name: "USERS", path: "/users", label: "COMMUNITY" },
+  { name: "FORUM", path: "/forum", label: "DISCUSSIONS" },
   { name: "CLUBS", path: "/clubs", label: "NETWORK" },
   { name: "INTERNATIONAL", path: "/international", label: "GLOBAL" },
 ];
@@ -60,7 +61,13 @@ const Header = () => {
       </div>
 
       {/* Premium Menu Trigger Wrapper */}
-      <div className="fixed top-5 right-5 sm:top-10 sm:right-10 z-[1001] flex items-center gap-4 sm:gap-6">
+      <div className="fixed top-5 right-5 sm:top-10 sm:right-10 z-[1001] flex items-center gap-3 sm:gap-6">
+        <button
+          onClick={() => navigate("/safety")}
+          className="hidden sm:block font-body text-[9px] uppercase tracking-[0.2em] text-copper border border-copper/30 px-3 py-2 hover:bg-copper hover:text-carbon transition-all duration-300"
+        >
+          Safety Influencers
+        </button>
         {/* Hover Side Label */}
         <AnimatePresence>
           {isHovered && (

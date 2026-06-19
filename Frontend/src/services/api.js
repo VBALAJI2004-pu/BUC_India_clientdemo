@@ -42,6 +42,10 @@ export const eventService = {
     const response = await api.get("/events");
     return response.data;
   },
+  getHomepage: async () => {
+    const response = await api.get("/events/homepage");
+    return response.data;
+  },
   create: async (formData) => {
     const response = await api.post("/events", formData, {
       headers: {
@@ -176,6 +180,10 @@ export const profileService = {
 export const clubService = {
   getPublic: async () => {
     const response = await api.get("/clubs/public");
+    return response.data;
+  },
+  getPublicBySlug: async (slug) => {
+    const response = await api.get(`/clubs/public/${slug}`);
     return response.data;
   },
   createRequest: async (formData) => {
@@ -331,6 +339,82 @@ export const safetyInfluencerService = {
 export const membersService = {
   getPublic: async () => {
     const response = await api.get("/members/public");
+    return response.data;
+  },
+};
+
+export const usersService = {
+  getPublic: async () => {
+    const response = await api.get("/users/public");
+    return response.data;
+  },
+};
+
+export const membershipApplicationService = {
+  submit: async (data) => {
+    const response = await api.post("/membership-applications", data);
+    return response.data;
+  },
+  getAll: async () => {
+    const response = await api.get("/membership-applications");
+    return response.data;
+  },
+  updateStatus: async (id, status, adminNotes = "") => {
+    const response = await api.patch(`/membership-applications/${id}/status`, {
+      status,
+      adminNotes,
+    });
+    return response.data;
+  },
+  delete: async (id) => {
+    const response = await api.delete(`/membership-applications/${id}`);
+    return response.data;
+  },
+};
+
+export const forumService = {
+  getCategories: async () => {
+    const response = await api.get("/forum/categories");
+    return response.data;
+  },
+  getTopics: async (params = {}) => {
+    const response = await api.get("/forum/topics", { params });
+    return response.data;
+  },
+  getRecent: async () => {
+    const response = await api.get("/forum/topics/recent");
+    return response.data;
+  },
+  getTopic: async (id) => {
+    const response = await api.get(`/forum/topics/${id}`);
+    return response.data;
+  },
+  createTopic: async (data) => {
+    const response = await api.post("/forum/topics", data);
+    return response.data;
+  },
+  createReply: async (topicId, data) => {
+    const response = await api.post(`/forum/topics/${topicId}/replies`, data);
+    return response.data;
+  },
+  likeTopic: async (topicId, email) => {
+    const response = await api.post(`/forum/topics/${topicId}/like`, { email });
+    return response.data;
+  },
+  likeReply: async (replyId, email) => {
+    const response = await api.post(`/forum/replies/${replyId}/like`, { email });
+    return response.data;
+  },
+  adminUpdateTopic: async (id, data) => {
+    const response = await api.patch(`/forum/topics/${id}`, data);
+    return response.data;
+  },
+  adminDeleteTopic: async (id) => {
+    const response = await api.delete(`/forum/topics/${id}`);
+    return response.data;
+  },
+  adminDeleteReply: async (id) => {
+    const response = await api.delete(`/forum/replies/${id}`);
     return response.data;
   },
 };

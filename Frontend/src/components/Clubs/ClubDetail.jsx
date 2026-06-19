@@ -1,26 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Users,
-  Calendar,
   Crown,
   Star,
   Shield,
-  Images,
   Loader2,
-  MapPin,
   Zap,
-  CheckCircle
+  CheckCircle,
 } from "lucide-react";
 import { clubService } from "../../services/api";
-
-const generateSlug = (name) =>
-  name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-");
 
 const roleIcon = (role = "") => {
   const r = role.toLowerCase();
@@ -35,42 +25,45 @@ const roleLabel = (role = "") =>
 const ClubDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const [club, setClub] = useState(location.state?.club || null);
-  const [loading, setLoading] = useState(!location.state?.club);
+  const [club, setClub] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!club) fetchClub();
-    // eslint-disable-next-line
-  }, [slug]);
-
-  const fetchClub = async () => {
-    setLoading(true);
-    try {
-      const clubs = await clubService.getPublic();
-      const found = clubs.find(
-        (c) => (c.slug || generateSlug(c.name)) === slug
-      );
-      if (found) setClub(found);
-      else navigate("/clubs", { replace: true });
-    } catch (err) {
-      navigate("/clubs", { replace: true });
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchClub = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await clubService.getPublicBySlug(slug);
+        setClub(data);
+      } catch {
+        setError("Club not found");
+        setTimeout(() => navigate("/clubs", { replace: true }), 2000);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchClub();
+  }, [slug, navigate]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-carbon flex flex-col items-center justify-center gap-4 text-white">
-        <div className="w-12 h-12 border-4 border-copper/30 border-t-copper rounded-full animate-spin"></div>
-        <p className="font-body text-xs tracking-widest uppercase opacity-50">Mobilizing Brotherhood...</p>
+        <Loader2 className="w-12 h-12 text-copper animate-spin" />
+        <p className="font-body text-xs tracking-widest uppercase opacity-50">
+          Loading chapter...
+        </p>
       </div>
     );
   }
 
-  if (!club) return null;
+  if (error || !club) {
+    return (
+      <div className="min-h-screen bg-carbon flex items-center justify-center text-white">
+        <p className="font-body text-red-400 uppercase tracking-widest">{error}</p>
+      </div>
+    );
+  }
 
   const joinDate = club.startedOn
     ? new Date(club.startedOn).toLocaleDateString("en-IN", {
@@ -79,173 +72,168 @@ const ClubDetail = () => {
       })
     : null;
 
-  const yearsActive = club.startedOn
-    ? new Date().getFullYear() - new Date(club.startedOn).getFullYear()
-    : null;
-
-  const leaders = [];
-  if (club.founderName) {
-    leaders.push({
-      name: club.founderName,
-      role: club.founderRole || "founder",
-    });
-  }
-  if (Array.isArray(club.admins)) {
-    club.admins.forEach((a) => {
-      if (a.name) {
-        leaders.push({
-          name: a.name,
-          role: a.role || "admin",
-        });
-      }
-    });
-  }
-
-  const founders = leaders.filter((l) =>
-    l.role?.toLowerCase().includes("founder")
-  );
-  const admins = leaders.filter(
-    (l) => !l.role?.toLowerCase().includes("founder")
+  const renderLeader = (leader, i) => (
+    <div key={i} className="flex items-center gap-6">
+      <div className="w-16 h-16 bg-carbon border border-white/10 flex items-center justify-center font-heading text-2xl text-copper">
+        {leader.name.charAt(0)}
+      </div>
+      <div>
+        <p className="font-heading text-xl uppercase leading-none mb-1">
+          {leader.name}
+        </p>
+        <div className="flex items-center gap-2">
+          {roleIcon(leader.role)}
+          <span className="font-body text-[10px] uppercase tracking-widest text-steel-dim">
+            {roleLabel(leader.role)}
+          </span>
+        </div>
+      </div>
+    </div>
   );
 
   return (
     <div className="min-h-screen bg-carbon text-white">
-      {/* Hero Banner */}
-      <div className="relative h-[60vh] md:h-[70vh] overflow-hidden">
-         {club.logoUrl ? (
-            <img src={club.logoUrl} alt={club.name} className="w-full h-full object-cover grayscale opacity-30" />
-         ) : (
-            <div className="w-full h-full bg-gradient-to-b from-carbon-light to-carbon" />
-         )}
-         <div className="absolute inset-0 bg-gradient-to-t from-carbon via-carbon/50 to-transparent" />
-         
-         <div className="absolute inset-0 flex flex-col justify-end px-6 md:px-12 pb-20 max-w-7xl mx-auto w-full">
-            <button
-               onClick={() => navigate("/clubs")}
-               className="flex items-center gap-2 font-body text-[10px] tracking-widest uppercase text-steel-dim hover:text-copper transition-colors mb-12"
-            >
-               <ArrowLeft size={14} />
-               Explore Network
-            </button>
+      <div className="relative h-[50vh] md:h-[60vh] overflow-hidden">
+        {club.logoUrl ? (
+          <img
+            src={club.logoUrl}
+            alt={club.name}
+            className="w-full h-full object-cover grayscale opacity-30"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-b from-carbon-light to-carbon" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-carbon via-carbon/50 to-transparent" />
 
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-               <div className="flex flex-col md:flex-row gap-8 items-start md:items-end">
-                  <div className="w-32 h-32 md:w-48 md:h-48 bg-carbon-light border border-white/10 p-4 shrink-0">
-                     {club.logoUrl ? (
-                        <img src={club.logoUrl} alt={club.name} className="w-full h-full object-contain" />
-                     ) : (
-                        <div className="w-full h-full flex items-center justify-center font-heading text-6xl text-white/5">
-                           {club.name.charAt(0)}
-                        </div>
-                     )}
-                  </div>
-                  <div>
-                     <h1 className="font-heading text-6xl md:text-8xl uppercase leading-none mb-4">{club.name}</h1>
-                     <p className="font-text text-copper italic text-lg opacity-80 uppercase tracking-widest">"{club.moto || "Brotherhood over everything."}"</p>
-                  </div>
-               </div>
+        <div className="absolute inset-0 flex flex-col justify-end px-6 md:px-12 pb-16 max-w-7xl mx-auto w-full">
+          <button
+            onClick={() => navigate("/clubs")}
+            className="flex items-center gap-2 font-body text-[10px] tracking-widest uppercase text-steel-dim hover:text-copper transition-colors mb-8"
+          >
+            <ArrowLeft size={14} />
+            Explore Network
+          </button>
 
-               <div className="flex flex-wrap gap-4">
-                  <div className="bg-white/5 border border-white/10 px-6 py-4 backdrop-blur-md">
-                     <span className="block font-body text-[10px] text-steel-dim uppercase tracking-widest mb-1">Chapter Size</span>
-                     <span className="block font-heading text-2xl">{club.participantCount || 0} RIDERS</span>
-                  </div>
-                  <div className="bg-copper/10 border border-copper/30 px-6 py-4 backdrop-blur-md">
-                     <span className="block font-body text-[10px] text-copper uppercase tracking-widest mb-1">Status</span>
-                     <div className="flex items-center gap-2">
-                        <CheckCircle size={16} className="text-copper" />
-                        <span className="block font-heading text-2xl text-copper">BUC VERIFIED</span>
-                     </div>
-                  </div>
-               </div>
+          <div className="flex flex-col md:flex-row md:items-end gap-8">
+            <div className="w-28 h-28 md:w-40 md:h-40 bg-carbon-light border border-white/10 p-4 shrink-0">
+              {club.logoUrl ? (
+                <img
+                  src={club.logoUrl}
+                  alt={club.name}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center font-heading text-5xl text-white/5">
+                  {club.name.charAt(0)}
+                </div>
+              )}
             </div>
-         </div>
+            <div>
+              <h1 className="font-heading text-5xl md:text-7xl uppercase leading-none mb-2">
+                {club.name}
+              </h1>
+              <p className="font-text text-copper italic uppercase tracking-widest">
+                &ldquo;{club.moto || "Brotherhood over everything."}&rdquo;
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 md:px-12 py-24">
-         <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
-            {/* Left: About */}
-            <div className="lg:col-span-8 space-y-20">
-               <section>
-                  <h2 className="font-heading text-3xl uppercase mb-8 flex items-center gap-4">
-                     <Zap size={24} className="text-copper" />
-                     The Ethos
-                  </h2>
-                  <p className="font-text text-steel-dim text-xl leading-relaxed whitespace-pre-wrap">
-                     {club.showcaseText || "This chapter has not yet defined their public ethos statement. Rest assured, they represent the highest standards of the brotherhood."}
+      <div className="max-w-7xl mx-auto px-6 md:px-12 py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+          <div className="lg:col-span-8 space-y-16">
+            <section>
+              <h2 className="font-heading text-3xl uppercase mb-6 flex items-center gap-4">
+                <Zap size={24} className="text-copper" />
+                The Ethos
+              </h2>
+              <p className="font-text text-steel-dim text-lg leading-relaxed whitespace-pre-wrap">
+                {club.showcaseText ||
+                  "This chapter has not yet defined their public ethos statement."}
+              </p>
+            </section>
+
+            <section>
+              <h2 className="font-heading text-3xl uppercase mb-8 flex items-center gap-4">
+                <Users size={24} className="text-copper" />
+                Active Members ({club.participantCount || 0})
+              </h2>
+              {!club.members?.length ? (
+                <div className="py-12 border border-dashed border-white/10 text-center">
+                  <p className="font-body text-steel-dim uppercase tracking-widest text-sm">
+                    No active members listed yet.
                   </p>
-               </section>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {club.members.map((member, i) => (
+                    <div
+                      key={`${member.fullName}-${i}`}
+                      className="flex items-center gap-4 p-4 border border-white/5 bg-carbon-light"
+                    >
+                      <div className="w-14 h-14 rounded-full border border-copper/30 overflow-hidden shrink-0">
+                        <img
+                          src={member.profileImage || "/logo.jpg"}
+                          alt={member.fullName}
+                          loading="lazy"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-heading text-lg uppercase">
+                          {member.fullName}
+                        </p>
+                        <p className="font-body text-[10px] uppercase tracking-widest text-steel-dim">
+                          {roleLabel(member.role)} ·{" "}
+                          {[member.city, member.state].filter(Boolean).join(", ") ||
+                            "India"}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
 
-               <section>
-                  <h2 className="font-heading text-3xl uppercase mb-12 flex items-center gap-4">
-                     <Images size={24} className="text-copper" />
-                     The Vault
-                  </h2>
-                  <div className="aspect-video bg-carbon-light border border-white/5 flex flex-col items-center justify-center text-center p-12">
-                     <Images size={48} className="text-white/10 mb-6" />
-                     <h3 className="font-heading text-2xl uppercase mb-2">Restricted Access</h3>
-                     <p className="font-body text-xs tracking-widest uppercase text-steel-dim">Gallery coming soon to the public network.</p>
-                  </div>
-               </section>
+          <div className="lg:col-span-4 space-y-8">
+            <div className="bg-carbon-light border border-white/5 p-8">
+              <h3 className="font-body text-[10px] uppercase tracking-[0.3em] text-copper mb-6">
+                Command Structure
+              </h3>
+              <div className="space-y-6">
+                {club.owner && renderLeader(club.owner, "owner")}
+                {club.admins?.map((a, i) => renderLeader(a, `admin-${i}`))}
+                {club.coAdmins?.map((a, i) => renderLeader(a, `co-${i}`))}
+              </div>
             </div>
 
-            {/* Right: Leadership & Meta */}
-            <div className="lg:col-span-4 space-y-12">
-               {/* Leadership */}
-               <div className="bg-carbon-light border border-white/5 p-10">
-                  <h3 className="font-body text-[10px] uppercase tracking-[0.3em] text-copper mb-8">Command Structure</h3>
-                  
-                  <div className="space-y-8">
-                     {founders.map((leader, i) => (
-                        <div key={i} className="flex items-center gap-6">
-                           <div className="w-16 h-16 bg-carbon border border-white/10 flex items-center justify-center font-heading text-2xl text-copper">
-                              {leader.name.charAt(0)}
-                           </div>
-                           <div>
-                              <p className="font-heading text-xl uppercase leading-none mb-1">{leader.name}</p>
-                              <div className="flex items-center gap-2">
-                                 {roleIcon(leader.role)}
-                                 <span className="font-body text-[10px] uppercase tracking-widest text-steel-dim">{roleLabel(leader.role)}</span>
-                              </div>
-                           </div>
-                        </div>
-                     ))}
-                     
-                     {admins.map((leader, i) => (
-                        <div key={i} className="flex items-center gap-6">
-                           <div className="w-16 h-16 bg-carbon border border-white/10 flex items-center justify-center font-heading text-2xl text-white/20">
-                              {leader.name.charAt(0)}
-                           </div>
-                           <div>
-                              <p className="font-heading text-xl uppercase leading-none mb-1">{leader.name}</p>
-                              <div className="flex items-center gap-2">
-                                 {roleIcon(leader.role)}
-                                 <span className="font-body text-[10px] uppercase tracking-widest text-steel-dim">{roleLabel(leader.role)}</span>
-                              </div>
-                           </div>
-                        </div>
-                     ))}
-                  </div>
-               </div>
-
-               {/* Meta Stats */}
-               <div className="space-y-4">
-                  <div className="flex justify-between p-6 border border-white/5 font-body">
-                     <span className="text-[10px] uppercase tracking-widest text-steel-dim">Active Since</span>
-                     <span className="text-xs uppercase text-white font-bold">{joinDate || "N/A"}</span>
-                  </div>
-                  <div className="flex justify-between p-6 border border-white/5 font-body">
-                     <span className="text-[10px] uppercase tracking-widest text-steel-dim">Loyalty Rank</span>
-                     <span className="text-xs uppercase text-copper font-bold">{yearsActive > 0 ? `ELITE CHAPTER` : "INITIATE"}</span>
-                  </div>
-                  <div className="flex justify-between p-6 border border-white/5 font-body">
-                     <span className="text-[10px] uppercase tracking-widest text-steel-dim">Location</span>
-                     <span className="text-xs uppercase text-white font-bold">{club.city || "INDIA"}</span>
-                  </div>
-               </div>
+            <div className="space-y-3">
+              <div className="flex justify-between p-5 border border-white/5 font-body">
+                <span className="text-[10px] uppercase tracking-widest text-steel-dim">
+                  Active Since
+                </span>
+                <span className="text-xs uppercase font-bold">
+                  {joinDate || "N/A"}
+                </span>
+              </div>
+              <div className="flex justify-between p-5 border border-copper/20 font-body bg-copper/5">
+                <span className="text-[10px] uppercase tracking-widest text-copper">
+                  Status
+                </span>
+                <span className="text-xs uppercase font-bold text-copper flex items-center gap-2">
+                  <CheckCircle size={14} /> BUC Verified
+                </span>
+              </div>
             </div>
-         </div>
+
+            <p className="font-body text-[10px] text-steel-dim uppercase tracking-widest leading-relaxed">
+              Club membership is managed by club owners and admins. Public
+              visitors can view members but cannot join directly.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

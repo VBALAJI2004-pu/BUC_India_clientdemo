@@ -22,6 +22,9 @@ import talentRoutes from "./routes/talentRoutes.js";
 import internationalProfileRoutes from "./routes/internationalProfileRoutes.js";
 import safetyInfluencerRoutes from "./routes/safetyInfluencerRoutes.js";
 import memberRoutes from "./routes/memberRoutes.js";
+import membershipApplicationRoutes from "./routes/membershipApplicationRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import forumRoutes from "./routes/forumRoutes.js";
 
 const app = express();
 
@@ -145,6 +148,9 @@ app.use("/api/talent", talentRoutes);
 app.use("/api/international-profiles", internationalProfileRoutes);
 app.use("/api/safety-influencers", safetyInfluencerRoutes);
 app.use("/api/members", memberRoutes);
+app.use("/api/membership-applications", membershipApplicationRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/forum", forumRoutes);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

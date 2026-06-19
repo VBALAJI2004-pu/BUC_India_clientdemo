@@ -73,9 +73,7 @@ const Members = () => {
 
   const stats = [
     { value: "500+", label: "ACTIVE RIDERS" },
-    { value: "1", label: "NATION" },
-    { value: "2.5k", label: "COMPLETED RIDES" },
-    { value: "20k", label: "KILOMETERS" },
+    { value: "1", label: "ONE NATION · ONE BROTHERHOOD" },
   ];
 
   const renderMemberGrid = () => {
@@ -218,7 +216,7 @@ const Members = () => {
           {renderMemberGrid()}
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-12 pt-20 border-t border-white/5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-20 border-t border-white/5 max-w-3xl mx-auto">
           {stats.map((stat, i) => (
             <div key={i} className="text-center">
               <span className="font-heading text-6xl text-white block mb-2">
@@ -242,7 +240,7 @@ const Members = () => {
               Exclusive access to premium rallies and events.
             </p>
             <button
-              onClick={() => navigate("/register")}
+              onClick={() => navigate("/membership-apply")}
               className="bg-copper text-carbon px-12 py-5 font-heading text-xl uppercase hover:bg-white transition-all duration-500"
             >
               Apply For Membership

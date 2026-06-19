@@ -2,13 +2,46 @@ import Club from '../models/Club.js';
 import ClubMembership from '../models/ClubMembership.js';
 import User from '../models/User.js';
 import Otp from '../models/Otp.js';
+import { slugify } from '../utils/slugify.js';
+
+const mapSafeMember = (membership) => {
+  const user = membership.userId;
+  if (!user || typeof user !== 'object') return null;
+  return {
+    fullName: user.fullName || '',
+    role: membership.role || 'member',
+    city: user.city || '',
+    state: user.state || '',
+    profileImage: user.profileImage || '',
+  };
+};
+
+const buildClubLeadership = (club) => {
+  const leaders = [];
+  if (club.founder?.name) {
+    leaders.push({
+      name: club.founder.name,
+      role: club.founder.role || 'founder',
+    });
+  }
+  if (Array.isArray(club.admins)) {
+    club.admins.forEach((admin) => {
+      if (admin?.name) {
+        leaders.push({
+          name: admin.name,
+          role: admin.role || 'admin',
+        });
+      }
+    });
+  }
+  return leaders;
+};
 
 // Public: list approved clubs with minimal info
 export const getPublicClubs = async (req, res) => {
   try {
     const clubs = await Club.find({ status: 'approved' }).sort({ createdAt: -1 });
 
-    // For each club, compute active participant count
     const clubIds = clubs.map((c) => c._id);
     const counts = await ClubMembership.aggregate([
       { $match: { clubId: { $in: clubIds }, status: 'active' } },
@@ -17,17 +50,89 @@ export const getPublicClubs = async (req, res) => {
 
     const countMap = new Map(counts.map((c) => [String(c._id), c.count]));
 
-    const response = clubs.map((club) => ({
-      id: club._id,
-      name: club.name,
-      logoUrl: club.logoUrl,
-      moto: club.moto,
-      participantCount: countMap.get(String(club._id)) || 0,
-    }));
+    const response = clubs.map((club) => {
+      const leaders = buildClubLeadership(club);
+      const owner = leaders.find((l) =>
+        l.role?.toLowerCase().includes('founder'),
+      );
+      const admins = leaders.filter((l) =>
+        l.role?.toLowerCase().includes('admin'),
+      );
+      const coAdmins = leaders.filter((l) =>
+        l.role?.toLowerCase().includes('co-admin'),
+      );
+
+      return {
+        id: club._id,
+        slug: slugify(club.name),
+        name: club.name,
+        logoUrl: club.logoUrl,
+        moto: club.moto,
+        startedOn: club.startedOn,
+        showcaseText: club.showcaseText,
+        participantCount: countMap.get(String(club._id)) || 0,
+        owner: owner || null,
+        admins,
+        coAdmins,
+        founderName: club.founder?.name || '',
+        founderRole: club.founder?.role || 'founder',
+      };
+    });
 
     res.json(response);
   } catch (error) {
     console.error('Get public clubs error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Public: single club with full roster (view-only)
+export const getPublicClubDetail = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const clubs = await Club.find({ status: 'approved' });
+    const club = clubs.find((c) => slugify(c.name) === slug);
+
+    if (!club) {
+      return res.status(404).json({ message: 'Club not found' });
+    }
+
+    const memberships = await ClubMembership.find({
+      clubId: club._id,
+      status: 'active',
+    })
+      .populate('userId', 'fullName city state profileImage registrationType')
+      .sort({ createdAt: 1 });
+
+    const members = memberships.map(mapSafeMember).filter(Boolean);
+    const leaders = buildClubLeadership(club);
+
+    const owner =
+      leaders.find((l) => l.role?.toLowerCase().includes('founder')) || null;
+    const admins = leaders.filter((l) => {
+      const r = l.role?.toLowerCase() || '';
+      return r.includes('admin') && !r.includes('co-admin');
+    });
+    const coAdmins = leaders.filter((l) =>
+      l.role?.toLowerCase().includes('co-admin'),
+    );
+
+    res.json({
+      id: club._id,
+      slug: slugify(club.name),
+      name: club.name,
+      logoUrl: club.logoUrl,
+      moto: club.moto,
+      startedOn: club.startedOn,
+      showcaseText: club.showcaseText,
+      participantCount: members.length,
+      owner,
+      admins,
+      coAdmins,
+      members,
+    });
+  } catch (error) {
+    console.error('Get public club detail error:', error);
     res.status(500).json({ message: error.message });
   }
 };

@@ -34,7 +34,7 @@ const EventManagement = () => {
   const [filterDate, setFilterDate] = useState("");
   const [formData, setFormData] = useState({
     title: "", description: "", eventDate: "", eventTime: "",
-    location: "", meetingPoint: "", isActive: true, certificateEnabled: false,
+    location: "", meetingPoint: "", isActive: true, showOnHomepage: false, certificateEnabled: false,
   });
   const [bannerFile, setBannerFile] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(null);
@@ -130,7 +130,7 @@ const EventManagement = () => {
   };
 
   const resetForm = () => {
-    setFormData({ title: "", description: "", eventDate: "", eventTime: "", location: "", meetingPoint: "", isActive: true, certificateEnabled: false });
+    setFormData({ title: "", description: "", eventDate: "", eventTime: "", location: "", meetingPoint: "", isActive: true, showOnHomepage: false, certificateEnabled: false });
     setBannerFile(null); setBannerPreview(null); setEditingEvent(null); setShowForm(false);
   };
 
@@ -142,6 +142,7 @@ const EventManagement = () => {
       eventTime: event.eventTime || "", location: event.location || "",
       meetingPoint: event.meetingPoint || "",
       isActive: event.isActive !== undefined ? event.isActive : true,
+      showOnHomepage: event.showOnHomepage !== undefined ? event.showOnHomepage : false,
       certificateEnabled: event.certificateEnabled !== undefined ? event.certificateEnabled : false,
     });
     setBannerPreview(event.banner);
@@ -262,6 +263,17 @@ const EventManagement = () => {
                         <div>
                            <div className="font-body text-[10px] uppercase tracking-widest font-bold text-white">Merit Credentials</div>
                            <div className="text-[8px] text-steel-dim uppercase tracking-wider">{formData.certificateEnabled ? "Certificates active" : "Certificates restricted"}</div>
+                        </div>
+                     </label>
+
+                     <label className="flex items-center gap-4 cursor-pointer">
+                        <div className={`w-10 h-6 rounded-full relative transition-colors ${formData.showOnHomepage ? 'bg-copper' : 'bg-carbon-light border border-white/10'}`}>
+                           <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${formData.showOnHomepage ? 'left-5 bg-carbon' : 'left-1 bg-steel-dim'}`} />
+                        </div>
+                        <input type="checkbox" name="showOnHomepage" checked={formData.showOnHomepage} onChange={handleInputChange} className="hidden" />
+                        <div>
+                           <div className="font-body text-[10px] uppercase tracking-widest font-bold text-white">Homepage Promotion</div>
+                           <div className="text-[8px] text-steel-dim uppercase tracking-wider">{formData.showOnHomepage ? "Register Now banner visible" : "Hidden from homepage"}</div>
                         </div>
                      </label>
                   </div>

@@ -5,6 +5,7 @@ const Marquee = lazy(() => import("./Marquee.jsx"));
 const About = lazy(() => import("./About.jsx"));
 const StatsStrip = lazy(() => import("./StatsStrip.jsx"));
 const Safety = lazy(() => import("./Safety.jsx"));
+const EventPromotionBanner = lazy(() => import("./EventPromotionBanner.jsx"));
 
 const SectionFallback = () => (
   <div className="min-h-[40vh] flex items-center justify-center bg-carbon">
@@ -15,6 +16,7 @@ const SectionFallback = () => (
 const HomePage = () => (
   <Suspense fallback={<SectionFallback />}>
     <Hero />
+    <EventPromotionBanner />
     <Marquee />
     <About />
     <StatsStrip />

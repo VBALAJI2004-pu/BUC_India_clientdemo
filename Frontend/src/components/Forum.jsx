@@ -1,232 +1,465 @@
-import React, { useMemo, useState } from "react";
-import { 
-  Pin, 
-  MessageSquare, 
-  ThumbsUp, 
-  Clock, 
-  User, 
+import React, { useState, useEffect, useCallback } from "react";
+import { toast } from "react-toastify";
+import {
+  Pin,
+  Lock,
+  Star,
+  Trash2,
+  MessageSquare,
+  ThumbsUp,
   Plus,
-  ArrowRight
+  Search,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { forumService } from "../services/api";
+
+const formatTime = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  const diff = Date.now() - d.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+};
 
 const Forum = () => {
   const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+  const [topics, setTopics] = useState([]);
+  const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
+  const [recent, setRecent] = useState([]);
   const [activeCategory, setActiveCategory] = useState("all");
-  const [activePostId, setActivePostId] = useState(null);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [activeTopicId, setActiveTopicId] = useState(null);
+  const [topicDetail, setTopicDetail] = useState(null);
   const [replyText, setReplyText] = useState("");
+  const [showNewTopic, setShowNewTopic] = useState(false);
+  const [newTopic, setNewTopic] = useState({ title: "", content: "", categorySlug: "general" });
+  const [submitting, setSubmitting] = useState(false);
 
-  const categories = [
-    { id: "all", name: "All Topics", count: 156 },
-    { id: "general", name: "General Discussion", count: 45 },
-    { id: "rides", name: "Ride Planning", count: 32 },
-    { id: "maintenance", name: "Bike Maintenance", count: 28 },
-    { id: "gear", name: "Gear Reviews", count: 21 },
-    { id: "events", name: "Events", count: 18 },
-    { id: "newbie", name: "New Rider Help", count: 12 },
-  ];
-
-  const forumPosts = [
-    {
-      id: 1,
-      title: "Planning a Cross-Country Adventure - Route Suggestions?",
-      author: "Rajesh Kumar",
-      category: "rides",
-      replies: 23,
-      likes: 15,
-      lastActivity: "2 hours ago",
-      isPinned: true,
-      preview:
-        "Hey everyone! Planning a 3-week cross-country ride from Delhi to Mumbai. Looking for must-see stops and rider-friendly routes...",
-    },
-    {
-      id: 2,
-      title: "Best Winter Riding Gear - What Do You Recommend?",
-      author: "Pradeep",
-      category: "gear",
-      replies: 18,
-      likes: 12,
-      lastActivity: "4 hours ago",
-      preview:
-        "Winter is coming and I need to upgrade my cold weather gear. What are your go-to brands for heated gloves and jackets?",
-    },
-  ];
-
-  const filteredPosts = useMemo(
-    () =>
-      activeCategory === "all"
-        ? forumPosts
-        : forumPosts.filter((post) => post.category === activeCategory),
-    [activeCategory],
-  );
-
+  const userEmail = sessionStorage.getItem("userEmail") || "";
   const isLoggedIn = sessionStorage.getItem("userLoggedIn") === "true";
 
-  const ensureLoggedIn = () => {
-    if (!isLoggedIn) {
-      toast.info("Please login / sign up to post in the forum.");
-      navigate("/login");
-      return false;
+  const loadCategories = useCallback(async () => {
+    try {
+      const data = await forumService.getCategories();
+      setCategories(Array.isArray(data) ? data : []);
+    } catch {
+      setCategories([]);
     }
-    return true;
-  };
+  }, []);
 
-  const handleOpenPost = (postId) => {
-    if (!ensureLoggedIn()) return;
-    setActivePostId(postId);
-    setReplyText("");
-  };
+  const loadTopics = useCallback(async (page = 1) => {
+    setLoading(true);
+    try {
+      const params = { page, limit: 10 };
+      if (activeCategory !== "all") params.category = activeCategory;
+      if (search.trim()) params.search = search.trim();
+      const data = await forumService.getTopics(params);
+      setTopics(data.topics || []);
+      setPagination(data.pagination || { page: 1, pages: 1, total: 0 });
+    } catch {
+      setTopics([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeCategory, search]);
 
-  const handleNewTopic = () => {
-    if (!ensureLoggedIn()) return;
-    toast.info("Topic creation will be enabled soon.");
-  };
+  const loadRecent = useCallback(async () => {
+    try {
+      const data = await forumService.getRecent();
+      setRecent(Array.isArray(data) ? data : []);
+    } catch {
+      setRecent([]);
+    }
+  }, []);
 
-  const handleSubmitReply = () => {
-    if (!ensureLoggedIn()) return;
-    if (!replyText.trim()) {
-      toast.error("Please type a reply before submitting.");
+  useEffect(() => {
+    loadCategories();
+    loadRecent();
+  }, [loadCategories, loadRecent]);
+
+  useEffect(() => {
+    loadTopics(1);
+  }, [loadTopics]);
+
+  const openTopic = async (id) => {
+    if (!isLoggedIn) {
+      toast.info("Please login to view discussions");
+      navigate("/login");
       return;
     }
-    toast.success("Your reply has been captured (demo only).");
+    try {
+      const data = await forumService.getTopic(id);
+      setTopicDetail(data);
+      setActiveTopicId(id);
+    } catch {
+      toast.error("Could not load topic");
+    }
   };
 
-  const stats = [
-    { label: "Total Topics", value: "247" },
-    { label: "Total Posts", value: "280" },
-    { label: "Active Members", value: "10" },
-    { label: "Community Support", value: "24/7" },
+  const handleReply = async () => {
+    if (!replyText.trim()) return;
+    setSubmitting(true);
+    try {
+      await forumService.createReply(activeTopicId, {
+        content: replyText,
+        email: userEmail,
+        phone: sessionStorage.getItem("userPhone") || "",
+      });
+      toast.success("Reply posted");
+      setReplyText("");
+      const data = await forumService.getTopic(activeTopicId);
+      setTopicDetail(data);
+      loadTopics(pagination.page);
+      loadRecent();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to post reply");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCreateTopic = async (e) => {
+    e.preventDefault();
+    if (!isLoggedIn) {
+      toast.info("Please login to create a topic");
+      navigate("/login");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await forumService.createTopic({
+        ...newTopic,
+        email: userEmail,
+        phone: sessionStorage.getItem("userPhone") || "",
+      });
+      toast.success("Topic created");
+      setShowNewTopic(false);
+      setNewTopic({ title: "", content: "", categorySlug: "general" });
+      loadTopics(1);
+      loadRecent();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to create topic");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleLikeTopic = async () => {
+    if (!userEmail) return;
+    try {
+      await forumService.likeTopic(activeTopicId, userEmail);
+      const data = await forumService.getTopic(activeTopicId);
+      setTopicDetail(data);
+    } catch {
+      toast.error("Could not like topic");
+    }
+  };
+
+  const allCategories = [
+    { slug: "all", name: "All Topics", topicCount: pagination.total },
+    ...categories,
   ];
 
   return (
-    <section id="forum" className="section-container py-20 sm:py-24 bg-carbon text-white">
-       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 md:gap-8 mb-10 md:mb-16">
+    <section className="section-container py-24 bg-carbon text-white min-h-screen">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start gap-8 mb-12">
           <div>
-            <span className="text-copper font-body tracking-ultra text-xs md:text-sm uppercase mb-2 block font-bold">The Discussion</span>
-            <h2 className="font-heading text-6xl md:text-8xl uppercase leading-none">The <span className="text-transparent outline-title">Forum</span></h2>
+            <span className="text-copper font-body text-xs uppercase tracking-[0.3em] font-bold">
+              Community
+            </span>
+            <h1 className="font-heading text-6xl md:text-7xl uppercase leading-none">
+              The{" "}
+              <span className="text-transparent outline-title">Forum</span>
+            </h1>
           </div>
-          
           <button
-            onClick={handleNewTopic}
-            className="flex items-center gap-3 bg-copper text-carbon px-6 sm:px-8 py-3 sm:py-4 font-heading text-base sm:text-lg uppercase hover:bg-white transition-colors duration-300"
+            onClick={() =>
+              isLoggedIn ? setShowNewTopic(true) : navigate("/login")
+            }
+            className="flex items-center gap-2 bg-copper text-carbon px-6 py-3 font-heading uppercase hover:bg-white transition-colors"
           >
-            <Plus size={20} />
-            New Topic
+            <Plus size={18} /> New Topic
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-           {/* Categories Sidebar */}
-           <div className="lg:col-span-3">
-              <div className="space-y-2 lg:sticky lg:top-32">
-                 <h3 className="font-body text-[10px] uppercase tracking-[0.3em] text-steel-dim mb-6">Categories</h3>
-                 {categories.map((cat) => (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <aside className="lg:col-span-3 space-y-6">
+            <div className="border border-white/5 p-4">
+              <div className="relative mb-4">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-steel-dim" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && loadTopics(1)}
+                  placeholder="Search..."
+                  className="w-full bg-carbon-light border border-white/10 pl-9 pr-3 py-2 font-body text-xs uppercase tracking-widest outline-none focus:border-copper"
+                />
+              </div>
+              <h3 className="font-body text-[10px] uppercase tracking-widest text-copper mb-3">
+                Categories
+              </h3>
+              {allCategories.map((cat) => (
+                <button
+                  key={cat.slug}
+                  onClick={() => setActiveCategory(cat.slug)}
+                  className={`w-full text-left px-3 py-2 font-body text-[10px] uppercase tracking-widest mb-1 transition-colors ${
+                    activeCategory === cat.slug
+                      ? "bg-copper/20 text-copper border-l-2 border-copper"
+                      : "text-steel-dim hover:text-white"
+                  }`}
+                >
+                  {cat.name}{" "}
+                  <span className="opacity-50">({cat.topicCount || 0})</span>
+                </button>
+              ))}
+            </div>
+
+            {recent.length > 0 && (
+              <div className="border border-white/5 p-4">
+                <h3 className="font-body text-[10px] uppercase tracking-widest text-copper mb-3">
+                  Recent
+                </h3>
+                {recent.map((r) => (
+                  <button
+                    key={r.id}
+                    onClick={() => openTopic(r.id)}
+                    className="block w-full text-left py-2 border-b border-white/5 last:border-0 hover:text-copper"
+                  >
+                    <p className="font-body text-xs uppercase truncate">{r.title}</p>
+                    <p className="font-body text-[9px] text-steel-dim">
+                      {formatTime(r.lastActivity)}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </aside>
+
+          <main className="lg:col-span-9">
+            {activeTopicId && topicDetail ? (
+              <div className="border border-white/5 bg-carbon-light p-6 md:p-8">
+                <button
+                  onClick={() => {
+                    setActiveTopicId(null);
+                    setTopicDetail(null);
+                  }}
+                  className="flex items-center gap-2 font-body text-[10px] uppercase tracking-widest text-steel-dim hover:text-copper mb-6"
+                >
+                  <ChevronLeft size={14} /> Back to topics
+                </button>
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {topicDetail.topic.isPinned && (
+                    <span className="flex items-center gap-1 text-copper text-[10px] uppercase">
+                      <Pin size={12} /> Pinned
+                    </span>
+                  )}
+                  {topicDetail.topic.isFeatured && (
+                    <span className="flex items-center gap-1 text-copper text-[10px] uppercase">
+                      <Star size={12} /> Featured
+                    </span>
+                  )}
+                  {topicDetail.topic.isLocked && (
+                    <span className="flex items-center gap-1 text-red-400 text-[10px] uppercase">
+                      <Lock size={12} /> Locked
+                    </span>
+                  )}
+                </div>
+
+                <h2 className="font-heading text-3xl uppercase mb-2">
+                  {topicDetail.topic.title}
+                </h2>
+                <p className="font-body text-[10px] text-steel-dim uppercase tracking-widest mb-6">
+                  By {topicDetail.topic.authorName} · {topicDetail.topic.categoryName}
+                </p>
+                <p className="font-text text-steel-dim leading-relaxed mb-6 whitespace-pre-wrap">
+                  {topicDetail.topic.content}
+                </p>
+
+                <button
+                  onClick={handleLikeTopic}
+                  className="flex items-center gap-2 text-copper font-body text-[10px] uppercase tracking-widest mb-8"
+                >
+                  <ThumbsUp size={14} /> {topicDetail.topic.likes} likes
+                </button>
+
+                <div className="border-t border-white/5 pt-6 space-y-4 mb-6">
+                  <h3 className="font-heading text-xl uppercase flex items-center gap-2">
+                    <MessageSquare size={18} className="text-copper" />
+                    Replies ({topicDetail.replies.length})
+                  </h3>
+                  {topicDetail.replies.map((reply) => (
+                    <div key={reply.id} className="p-4 border border-white/5 bg-carbon">
+                      <p className="font-body text-[10px] text-copper uppercase mb-2">
+                        {reply.authorName}
+                      </p>
+                      <p className="font-text text-sm text-steel-dim whitespace-pre-wrap">
+                        {reply.content}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {!topicDetail.topic.isLocked && (
+                  <div className="flex gap-3">
+                    <textarea
+                      value={replyText}
+                      onChange={(e) => setReplyText(e.target.value)}
+                      placeholder="Write a reply..."
+                      rows={3}
+                      className="flex-1 bg-carbon border border-white/10 p-3 font-body text-sm outline-none focus:border-copper resize-none"
+                    />
                     <button
-                      key={cat.id}
-                      onClick={() => setActiveCategory(cat.id)}
-                      className={`w-full flex items-center justify-between p-4 border transition-all duration-500 ${
-                        activeCategory === cat.id 
-                        ? "bg-copper/10 border-copper/30 text-copper" 
-                        : "bg-carbon-light border-white/5 text-steel-dim hover:border-white/20 hover:text-white"
-                      }`}
+                      onClick={handleReply}
+                      disabled={submitting}
+                      className="px-6 py-3 bg-copper text-carbon font-body text-xs uppercase self-end disabled:opacity-50"
                     >
-                       <span className="font-body text-xs uppercase tracking-widest">{cat.name}</span>
-                       <span className="font-heading text-sm opacity-50">{cat.count}</span>
+                      Reply
                     </button>
-                 ))}
+                  </div>
+                )}
               </div>
-           </div>
-
-           {/* Posts Area */}
-           <div className="lg:col-span-9">
-              <div className="space-y-6">
-                 {filteredPosts.map((post) => {
-                   const isActive = post.id === activePostId;
-                   return (
-                    <div
+            ) : loading ? (
+              <div className="py-20 flex justify-center">
+                <div className="w-10 h-10 border-4 border-copper/30 border-t-copper rounded-full animate-spin" />
+              </div>
+            ) : topics.length === 0 ? (
+              <div className="py-20 text-center border border-dashed border-white/10">
+                <p className="font-body text-steel-dim uppercase tracking-widest">
+                  No topics yet. Be the first to start a discussion!
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-3">
+                  {topics.map((post) => (
+                    <button
                       key={post.id}
-                      className="group bg-carbon-light border border-white/5 p-6 sm:p-8 hover:border-copper/30 transition-colors duration-300"
+                      onClick={() => openTopic(post.id)}
+                      className="w-full text-left p-5 border border-white/5 bg-carbon-light hover:border-copper/30 transition-all group"
                     >
-                       <div className="flex justify-between items-start mb-4 sm:mb-6">
-                          <div className="flex items-center gap-4">
-                             {post.isPinned && <Pin size={16} className="text-copper rotate-45" />}
-                             <h3 className="font-heading text-2xl uppercase group-hover:text-copper transition-colors">{post.title}</h3>
-                          </div>
-                          <span className="bg-white/5 px-3 py-1 font-body text-[10px] uppercase tracking-widest text-steel-dim group-hover:bg-copper group-hover:text-carbon transition-colors">
-                            {post.category}
-                          </span>
-                       </div>
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        {post.isPinned && <Pin size={12} className="text-copper" />}
+                        {post.isFeatured && <Star size={12} className="text-copper" />}
+                        {post.isLocked && <Lock size={12} className="text-red-400" />}
+                        <span className="font-body text-[9px] uppercase tracking-widest text-steel-dim">
+                          {post.categoryName}
+                        </span>
+                      </div>
+                      <h3 className="font-heading text-xl uppercase group-hover:text-copper transition-colors mb-2">
+                        {post.title}
+                      </h3>
+                      <p className="font-text text-sm text-steel-dim line-clamp-2 mb-3">
+                        {post.preview}
+                      </p>
+                      <div className="flex flex-wrap gap-4 font-body text-[10px] uppercase tracking-widest text-steel-dim">
+                        <span>{post.authorName}</span>
+                        <span className="flex items-center gap-1">
+                          <MessageSquare size={12} /> {post.replies}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <ThumbsUp size={12} /> {post.likes}
+                        </span>
+                        <span>{formatTime(post.lastActivity)}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
 
-                       <p className="font-text text-steel-dim text-sm mb-4 sm:mb-6 line-clamp-2 max-w-3xl">{post.preview}</p>
-
-                       <div className="flex flex-wrap items-center justify-between gap-4 sm:gap-6 border-t border-white/5 pt-4 sm:pt-6">
-                          <div className="flex items-center gap-8">
-                             <div className="flex items-center gap-2">
-                                <User size={14} className="text-copper" />
-                                <span className="font-body text-[10px] uppercase tracking-widest text-steel-dim">BY {post.author}</span>
-                             </div>
-                             <div className="flex items-center gap-2">
-                                <Clock size={14} className="text-copper" />
-                                <span className="font-body text-[10px] uppercase tracking-widest text-steel-dim">{post.lastActivity}</span>
-                             </div>
-                          </div>
-
-                          <div className="flex items-center gap-4 sm:gap-8">
-                             <div className="flex items-center gap-2">
-                                <MessageSquare size={14} className="text-steel-dim" />
-                                <span className="font-heading text-sm text-white">{post.replies}</span>
-                             </div>
-                             <div className="flex items-center gap-2">
-                                <ThumbsUp size={14} className="text-steel-dim" />
-                                <span className="font-heading text-sm text-white">{post.likes}</span>
-                             </div>
-                             <button
-                               onClick={() => handleOpenPost(post.id)}
-                               className="text-copper hover:translate-x-1.5 transition-transform"
-                             >
-                                <ArrowRight size={20} />
-                             </button>
-                          </div>
-                       </div>
-
-                       {isActive && (
-                         <div className="mt-4 sm:mt-6 border-t border-white/10 pt-4 sm:pt-5 space-y-3">
-                           <textarea
-                             value={replyText}
-                             onChange={(e) => setReplyText(e.target.value)}
-                             rows={3}
-                             className="w-full bg-carbon border border-white/10 px-4 py-3 font-body text-sm outline-none focus:border-copper transition-colors resize-none"
-                             placeholder="Write your reply…"
-                           />
-                           <div className="flex justify-end">
-                             <button
-                               type="button"
-                               onClick={handleSubmitReply}
-                               className="px-6 py-2 bg-copper text-carbon font-body text-[10px] uppercase tracking-widest hover:bg-white transition-colors duration-300"
-                             >
-                               Post Reply
-                             </button>
-                           </div>
-                         </div>
-                       )}
-                    </div>
-                 );})}
-              </div>
-
-              {/* Forum Stats Strip */}
-              <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 py-12 border-y border-white/5">
-                 {stats.map((stat, i) => (
-                    <div key={i} className="text-center">
-                       <span className="font-heading text-5xl block mb-2">{stat.value}</span>
-                       <span className="font-body text-[10px] text-steel-dim tracking-[0.3em] uppercase">{stat.label}</span>
-                    </div>
-                 ))}
-              </div>
-           </div>
+                {pagination.pages > 1 && (
+                  <div className="flex justify-center gap-4 mt-8">
+                    <button
+                      disabled={pagination.page <= 1}
+                      onClick={() => loadTopics(pagination.page - 1)}
+                      className="p-2 border border-white/10 disabled:opacity-30"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <span className="font-body text-xs uppercase tracking-widest self-center">
+                      Page {pagination.page} / {pagination.pages}
+                    </span>
+                    <button
+                      disabled={pagination.page >= pagination.pages}
+                      onClick={() => loadTopics(pagination.page + 1)}
+                      className="p-2 border border-white/10 disabled:opacity-30"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </main>
         </div>
-       </div>
+      </div>
+
+      {showNewTopic && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-carbon/90 backdrop-blur-md">
+          <form
+            onSubmit={handleCreateTopic}
+            className="max-w-lg w-full bg-carbon-light border border-white/10 p-8"
+          >
+            <h2 className="font-heading text-2xl uppercase mb-6">New Topic</h2>
+            <select
+              value={newTopic.categorySlug}
+              onChange={(e) =>
+                setNewTopic((p) => ({ ...p, categorySlug: e.target.value }))
+              }
+              className="w-full mb-4 bg-carbon border border-white/10 p-3 font-body text-xs uppercase"
+            >
+              {categories.map((c) => (
+                <option key={c.slug} value={c.slug}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <input
+              required
+              value={newTopic.title}
+              onChange={(e) =>
+                setNewTopic((p) => ({ ...p, title: e.target.value }))
+              }
+              placeholder="Topic title"
+              className="w-full mb-4 bg-carbon border border-white/10 p-3 font-body text-sm outline-none focus:border-copper"
+            />
+            <textarea
+              required
+              value={newTopic.content}
+              onChange={(e) =>
+                setNewTopic((p) => ({ ...p, content: e.target.value }))
+              }
+              placeholder="Your message..."
+              rows={5}
+              className="w-full mb-6 bg-carbon border border-white/10 p-3 font-body text-sm outline-none focus:border-copper resize-none"
+            />
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex-1 py-3 bg-copper text-carbon font-body text-xs uppercase disabled:opacity-50"
+              >
+                {submitting ? "Posting..." : "Create Topic"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowNewTopic(false)}
+                className="flex-1 py-3 border border-white/10 font-body text-xs uppercase"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </section>
   );
 };

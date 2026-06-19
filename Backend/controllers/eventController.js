@@ -22,6 +22,21 @@ export const getEvents = async (req, res) => {
   }
 };
 
+export const getHomepageEvents = async (req, res) => {
+  try {
+    const now = new Date();
+    const events = await Event.find({
+      isActive: true,
+      showOnHomepage: true,
+      eventDate: { $gte: now },
+    }).sort({ eventDate: 1 });
+
+    res.json(events);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const createEvent = async (req, res) => {
   try {
     const {
@@ -32,6 +47,7 @@ export const createEvent = async (req, res) => {
       location,
       meetingPoint,
       isActive,
+      showOnHomepage,
       certificateEnabled,
     } = req.body;
     
@@ -52,6 +68,10 @@ export const createEvent = async (req, res) => {
           : isActive !== undefined
             ? !!isActive
             : true,
+      showOnHomepage:
+        typeof showOnHomepage === "string"
+          ? showOnHomepage === "true"
+          : !!showOnHomepage,
       certificateEnabled:
         typeof certificateEnabled === "string"
           ? certificateEnabled === "true"
@@ -77,6 +97,13 @@ export const updateEvent = async (req, res) => {
         typeof updateData.isActive === "string"
           ? updateData.isActive === "true"
           : !!updateData.isActive;
+    }
+
+    if (updateData.showOnHomepage !== undefined) {
+      updateData.showOnHomepage =
+        typeof updateData.showOnHomepage === "string"
+          ? updateData.showOnHomepage === "true"
+          : !!updateData.showOnHomepage;
     }
 
     if (updateData.certificateEnabled !== undefined) {

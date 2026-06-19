@@ -31,6 +31,10 @@ const eventSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    showOnHomepage: {
+      type: Boolean,
+      default: false,
+    },
     // When enabled by admin, riders can download e-certificates
     certificateEnabled: {
       type: Boolean,
