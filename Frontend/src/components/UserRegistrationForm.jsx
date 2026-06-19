@@ -11,7 +11,6 @@ import {
   MapPin,
   Bike,
   Camera,
-  Calendar,
   AlertCircle,
   FileText,
   Image as ImageIcon,
@@ -21,88 +20,47 @@ import {
   Upload,
   X,
   GraduationCap,
-  Users
+  Users,
+  Plus,
+  ChevronDown,
+  Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { profileService, otpService, clubService } from "../services/api";
 import TermsModal from "./TermsModal";
+import DobPicker from "./DobPicker";
+import { USER_TERMS, USER_TERMS_FINAL_ACCEPTANCE } from "../constants/userRegistrationTerms";
+import {
+  getDuplicateEmailMessage,
+  getDuplicatePhoneMessage,
+  OTP_VERIFY_SUCCESS,
+  mapOtpVerifyError,
+} from "../constants/registrationValidationMessages";
 
-const USER_TERMS = [
-  {
-    title: "1. Compliance with Law",
-    content: "I agree to strictly comply with all applicable laws, including Motor Vehicle Act, Traffic Rules, and directions issued by Police and Government Authorities.\nThis ride operates under lawful permissions and regulations."
-  },
-  {
-    title: "2. Voluntary Participation & Assumption of Risk",
-    content: "I understand that riding involves inherent risks including accidents, injury, disability, or death.\n\nI voluntarily participate at my own risk and:\n• Accept full responsibility for my safety\n• Assume all risks associated with riding and event participation\n• Waive any right to hold organizers liable except in proven gross negligence"
-  },
-  {
-    title: "3. Health & Fitness Declaration",
-    content: "I confirm that:\n• I am physically and mentally fit to participate\n• I do not have any condition that may endanger myself or others\n• I will bear all medical expenses arising from any injury/incident"
-  },
-  {
-    title: "4. Riding Gear & Safety Compliance",
-    content: "I agree that:\n• Helmet and riding gear are mandatory\n• I will follow ride discipline, convoy rules, and marshal instructions\n• Any violation may result in removal from the ride"
-  },
-  {
-    title: "5. Code of Conduct",
-    content: "I agree to:\n• Maintain respectful and responsible behavior\n• Not engage in rash riding, stunts, or dangerous acts\n• Not consume alcohol, drugs, or intoxicants before or during the ride\n• Follow all instructions from organizers and volunteers\n\nFailure to comply will result in immediate termination without refund or liability."
-  },
-  {
-    title: "6. Prohibited Activities",
-    content: "Strictly prohibited:\n• Stunts or racing\n• Drinking and driving\n• Reckless or negligent riding\n• Any unlawful or disruptive behavior"
-  },
-  {
-    title: "7. Injury & Medical Responsibility",
-    content: "In case of any injury, accident, illness, or death:\n• I (or my family) shall not hold Humanity Calls Trust, BUC_India, UFH Riders, organizers, volunteers, or partners responsible\n• I agree to bear all costs including hospitalization, treatment, and recovery"
-  },
-  {
-    title: "8. Behavior-Based Termination Clause",
-    content: "Organizers reserve the absolute right to:\n• Remove any participant whose behavior is unsafe, harmful, or inappropriate\n\nSuch removal will be at participant’s own cost and risk. No claims, refunds, or compensations will be entertained."
-  },
-  {
-    title: "9. Media Consent",
-    content: "I grant permission to:\n• Capture photos/videos of me during the event\n• Use them for promotional, social media, or awareness purposes\n\nI waive any rights to compensation or ownership of such media."
-  },
-  {
-    title: "10. COVID & Public Health Compliance",
-    content: "I agree to follow:\n• All Government health advisories\n• COVID-19 or other public safety protocols (if applicable)"
-  },
-  {
-    title: "11. Confidentiality (For Volunteers)",
-    content: "I agree not to disclose:\n• Internal information\n• Operational or organizational details\n\nUnauthorized sharing may lead to legal action."
-  },
-  {
-    title: "12. Volunteer Terms (If Applicable)",
-    content: "• Participation is voluntary, not employment\n• Assigned roles must be followed responsibly\n• Registration fee (if applicable) is Non-refundable"
-  },
-  {
-    title: "⚠️ 13. Conflict of Interest Clause",
-    content: "I declare that:\n• I have no personal, financial, or professional conflict that interferes with my participation\n• I will not misuse the platform for personal gain, promotions, or competing interests\n• I will disclose any potential conflict to organizers immediately\n\nFailure to disclose may result in termination and legal action."
-  },
-  {
-    title: "🚫 14. Waiver of Claims & Legal Protection",
-    content: "I expressly agree that:\n• I shall not raise any claim, lawsuit, or legal action against:\n  - Humanity Calls Trust\n  - Bikers Unity Calls (BUC_India)\n  - Unity For Humanity Riders (UFH Riders)\n  - Organizers, volunteers, sponsors, or partners\n• This includes claims related to:\n  - Injury, accident, death\n  - Property damage or loss\n  - Emotional distress or inconvenience\n\nThis waiver applies even in unforeseen circumstances, except in cases of proven intentional misconduct."
-  },
-  {
-    title: "15. Limitation of Liability",
-    content: "Under no circumstances shall the organizers be liable for:\n• Indirect or consequential damages\n• Financial losses or missed opportunities\n• Third-party actions or incidents"
-  },
-  {
-    title: "16. Indemnity Clause",
-    content: "I agree to indemnify and hold harmless the organizers and associated entities from:\n• Any claims arising due to my actions, negligence, or misconduct\n• Any legal consequences caused by violation of rules or laws"
-  },
-  {
-    title: "17. Termination Rights",
-    content: "Organizers reserve the right to:\n• Cancel or modify the event\n• Deny participation without explanation\n• Take action against misconduct"
-  },
-  {
-    title: "18. Collaboration Clause",
-    content: "This ride is conducted under:\n• Humanity Calls Trust\n• Bikers Unity Calls (BUC_India)\n• Unity For Humanity Riders (UFH Riders)\n• Supporting NGOs and partners\n\nAll activities align with Government rules and lawful operations."
-  }
+const SOCIAL_PLATFORMS = [
+  { value: "facebook", label: "Facebook", placeholder: "e.g. https://facebook.com/yourprofile", field: "facebookUrl" },
+  { value: "instagram", label: "Instagram", placeholder: "e.g. https://instagram.com/yourusername", field: "instagramUrl" },
+  { value: "twitter", label: "Twitter/X", placeholder: "e.g. https://x.com/yourusername", field: "twitterUrl" },
+  { value: "website", label: "Personal Website", placeholder: "e.g. https://yourwebsite.com", field: "websiteUrl" },
 ];
 
-const UserRegistrationForm = () => {
+const getSocialPlaceholder = (platform) => {
+  if (!platform) return "Please select your presence";
+  return SOCIAL_PLATFORMS.find((p) => p.value === platform)?.placeholder || "Enter profile link";
+};
+
+const mapSocialProfilesToFields = (profiles) => {
+  const fields = { facebookUrl: "", instagramUrl: "", twitterUrl: "", websiteUrl: "" };
+  profiles.forEach(({ platform, url }) => {
+    const trimmed = url.trim();
+    if (!trimmed) return;
+    const config = SOCIAL_PLATFORMS.find((p) => p.value === platform);
+    if (config?.field) fields[config.field] = trimmed;
+  });
+  return fields;
+};
+
+const UserRegistrationForm = ({ eventId = "community" }) => {
   const [formData, setFormData] = useState({
     registrationType: "",
     fullName: "",
@@ -124,16 +82,16 @@ const UserRegistrationForm = () => {
     clubId: "",
     emergencyContactName: "",
     emergencyContactPhone: "",
-    facebookUrl: "",
-    instagramUrl: "",
-    twitterUrl: "",
-    youtubeUrl: "",
-    websiteUrl: "",
     collegeName: "",
     collegeIdNo: "",
     riderPhone: "",
-    riderRegistrationId: ""
+    riderRegistrationId: "",
+    participatingInYoga: false,
+    participatingInRally: false,
+    participatingInMVD2026: false,
   });
+
+  const needsTshirt = formData.participatingInYoga || formData.participatingInRally;
 
   const [profileImage, setProfileImage] = useState(null);
   const [profileImagePreview, setProfileImagePreview] = useState(null);
@@ -149,6 +107,17 @@ const UserRegistrationForm = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [clubs, setClubs] = useState([]);
+  const [socialProfiles, setSocialProfiles] = useState([{ platform: "", url: "" }]);
+  const [phoneError, setPhoneError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+
+  useEffect(() => {
+    if (!needsTshirt && formData.tshirtSize) {
+      setFormData((prev) => ({ ...prev, tshirtSize: "" }));
+    }
+  }, [needsTshirt, formData.tshirtSize]);
 
   useEffect(() => {
     let timer;
@@ -171,13 +140,86 @@ const UserRegistrationForm = () => {
   }, []);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     if (name === "phone" || name === "emergencyContactPhone" || name === "riderPhone") {
       const numericValue = value.replace(/\D/g, "").slice(0, 10);
       setFormData(prev => ({ ...prev, [name]: numericValue }));
+      if (name === "phone") setPhoneError("");
+    } else if (name === "email") {
+      setFormData(prev => ({ ...prev, [name]: value }));
+      setEmailError("");
+      setEmailVerified(false);
+      setOtpSent(false);
+    } else if (name === "otp") {
+      setFormData(prev => ({ ...prev, [name]: value }));
+      setEmailVerified(false);
+    } else if (type === "checkbox" && (name === "participatingInYoga" || name === "participatingInRally" || name === "participatingInMVD2026")) {
+      setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
+  };
+
+  const checkEmailDuplicate = async (email) => {
+    if (!email?.trim() || !email.includes("@")) {
+      setEmailError("");
+      return false;
+    }
+    if (!formData.registrationType) {
+      return false;
+    }
+    try {
+      const result = await profileService.checkEmailRegistered(
+        email.trim(),
+        formData.registrationType,
+        "User",
+      );
+      if (result.registered) {
+        const msg = result.message || getDuplicateEmailMessage("User", formData.registrationType);
+        setEmailError(msg);
+        toast.error(msg);
+        return true;
+      }
+      setEmailError("");
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleEmailBlur = async () => {
+    await checkEmailDuplicate(formData.email);
+  };
+
+  const checkPhoneDuplicate = async (phone) => {
+    if (phone.length !== 10) {
+      setPhoneError("");
+      return false;
+    }
+    if (!formData.registrationType) {
+      return false;
+    }
+    try {
+      const result = await profileService.checkPhoneRegistered(
+        phone,
+        formData.registrationType,
+        "User",
+      );
+      if (result.registered) {
+        const msg = result.message || getDuplicatePhoneMessage("User", formData.registrationType);
+        setPhoneError(msg);
+        toast.error(msg);
+        return true;
+      }
+      setPhoneError("");
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
+  const handlePhoneBlur = async () => {
+    await checkPhoneDuplicate(formData.phone);
   };
 
   const handleImageChange = (e, setFile, setPreview) => {
@@ -190,18 +232,63 @@ const UserRegistrationForm = () => {
     }
   };
 
+  const handleSocialPlatformChange = (index, platform) => {
+    setSocialProfiles((prev) =>
+      prev.map((profile, i) => (i === index ? { ...profile, platform } : profile))
+    );
+  };
+
+  const handleSocialUrlChange = (index, url) => {
+    setSocialProfiles((prev) =>
+      prev.map((profile, i) => (i === index ? { ...profile, url } : profile))
+    );
+  };
+
+  const handleAddSocialProfile = () => {
+    setSocialProfiles((prev) => [...prev, { platform: "", url: "" }]);
+  };
+
+  const handleRemoveSocialProfile = (index) => {
+    if (index === 0) return;
+    setSocialProfiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSendOtp = async () => {
     if (!formData.email) return toast.error("Please enter your email first");
+    if (!formData.registrationType) {
+      return toast.error("Please select a registration category first.");
+    }
+    if (await checkEmailDuplicate(formData.email)) {
+      return;
+    }
+    setEmailVerified(false);
     setIsSendingOtp(true);
     try {
-      await otpService.send(formData.email, "signup");
+      await otpService.send(formData.email, "signup", formData.registrationType);
       setOtpSent(true);
       setCountdown(60);
       toast.success("OTP sent to your email!");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to send OTP.");
+      toast.error("Unable to send OTP. Please try again.");
     } finally {
       setIsSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!formData.email || !formData.otp || formData.otp.length !== 6) {
+      return toast.error("Please enter the 6-digit OTP");
+    }
+    setIsVerifyingOtp(true);
+    try {
+      await otpService.verify(formData.email, formData.otp, "signup");
+      setEmailVerified(true);
+      toast.success(OTP_VERIFY_SUCCESS);
+    } catch (err) {
+      setEmailVerified(false);
+      toast.error(mapOtpVerifyError(err.response?.data?.message));
+    } finally {
+      setIsVerifyingOtp(false);
     }
   };
 
@@ -217,13 +304,28 @@ const UserRegistrationForm = () => {
     const isPS = formData.registrationType === "PS";
     const isPublicUser = formData.registrationType === "Public User";
     const isPillion = formData.registrationType === "Pillion";
+    const needsDob =
+      isRider ||
+      formData.registrationType === "Student" ||
+      isPillion ||
+      isPublicUser;
 
     // 1. Core validations common to ALL registration types
     if (
-      !formData.fullName || !formData.phone || !formData.gender || !formData.tshirtSize ||
+      !formData.fullName || !formData.phone || !formData.gender ||
       !formData.address || !formData.city || !formData.state || !formData.pincode
     ) {
-      return toast.error("Please fill all required fields: Name, Phone, Gender, T-Shirt Size, and Address details.");
+      return toast.error("Please fill all required fields: Name, Phone, Gender, and Address details.");
+    }
+
+    if (needsTshirt && !formData.tshirtSize) {
+      return toast.error("T-Shirt Size is required when participating in Yoga or Rally.");
+    }
+
+    if (formData.phone.length !== 10) return toast.error("Phone number must be exactly 10 digits");
+
+    if (await checkPhoneDuplicate(formData.phone)) {
+      return;
     }
 
     if (!isPS && !isPublicUser) {
@@ -232,20 +334,22 @@ const UserRegistrationForm = () => {
       }
     }
 
-    if (!isPS && !isPublicUser) {
+    if (!isPS) {
       if (!formData.email || !formData.password || !formData.otp) {
         return toast.error("Please fill Email, Password, and OTP.");
       }
-      if (!otpSent) return toast.error("Please verify your email with OTP first");
-    }
-
-    if (isPublicUser) {
-      if (!formData.email) {
-        return toast.error("Please fill Email Address.");
+      if (await checkEmailDuplicate(formData.email)) {
+        return;
+      }
+      if (!emailVerified) {
+        return toast.error("Please verify your email with OTP before submitting.");
       }
     }
 
-    if (formData.phone.length !== 10) return toast.error("Phone number must be exactly 10 digits");
+    if (needsDob && !isPS && !formData.dateOfBirth) {
+      return toast.error("Please fill Date of Birth.");
+    }
+
     if (!isPS && !isPublicUser) {
       if (formData.emergencyContactPhone.length !== 10) return toast.error("Emergency contact phone number must be exactly 10 digits");
 
@@ -290,7 +394,7 @@ const UserRegistrationForm = () => {
       }
     }
 
-    if (!termsAccepted) {
+    if (!isPS && !termsAccepted) {
       return toast.error("Please accept the Declaration & Legal Agreement to proceed.");
     }
 
@@ -300,16 +404,22 @@ const UserRegistrationForm = () => {
 
       // Append core fields (Common to all)
       data.append("registrationType", formData.registrationType);
+      if (eventId) {
+        data.append("eventId", eventId);
+      }
       data.append("fullName", formData.fullName);
       data.append("phone", formData.phone);
-      data.append("tshirtSize", formData.tshirtSize);
+      if (needsTshirt) {
+        data.append("tshirtSize", formData.tshirtSize);
+      }
+      data.append("participatingInYoga", formData.participatingInYoga);
+      data.append("participatingInRally", formData.participatingInRally);
+      data.append("participatingInMVD2026", formData.participatingInMVD2026);
       data.append("gender", formData.gender);
-      if (!isPS && !isPublicUser) {
+      if (!isPS) {
         data.append("email", formData.email);
         data.append("password", formData.password);
         data.append("otp", formData.otp);
-      } else if (isPublicUser) {
-        data.append("email", formData.email);
       }
       data.append("address", formData.address);
       data.append("city", formData.city);
@@ -322,13 +432,13 @@ const UserRegistrationForm = () => {
       }
 
       // Social details & Profile image (Common to non-PS)
-      if (!isPS && !isPublicUser) {
-        if (formData.facebookUrl) data.append("facebookUrl", formData.facebookUrl);
-        if (formData.instagramUrl) data.append("instagramUrl", formData.instagramUrl);
-        if (formData.twitterUrl) data.append("twitterUrl", formData.twitterUrl);
-        if (formData.youtubeUrl) data.append("youtubeUrl", formData.youtubeUrl);
-        if (formData.websiteUrl) data.append("websiteUrl", formData.websiteUrl);
-        if (profileImage) data.append("profileImage", profileImage);
+      if (!isPS) {
+        const socialFields = mapSocialProfilesToFields(socialProfiles);
+        if (socialFields.facebookUrl) data.append("facebookUrl", socialFields.facebookUrl);
+        if (socialFields.instagramUrl) data.append("instagramUrl", socialFields.instagramUrl);
+        if (socialFields.twitterUrl) data.append("twitterUrl", socialFields.twitterUrl);
+        if (socialFields.websiteUrl) data.append("websiteUrl", socialFields.websiteUrl);
+        if (!isPublicUser && profileImage) data.append("profileImage", profileImage);
       }
 
       // Conditionally append Rider details
@@ -344,6 +454,8 @@ const UserRegistrationForm = () => {
         if (formData.clubId) data.append("clubId", formData.clubId);
 
         if (licenseImage) data.append("licenseImage", licenseImage);
+      } else if (needsDob && !isPS) {
+        data.append("dateOfBirth", formData.dateOfBirth);
       }
 
       // Conditionally append Student details
@@ -370,13 +482,17 @@ const UserRegistrationForm = () => {
           dateOfBirth: "", bloodGroup: "", address: "", city: "", state: "", pincode: "",
           bikeModel: "", bikeRegistrationNumber: "", licenseNumber: "", clubId: "",
           emergencyContactName: "", emergencyContactPhone: "",
-          facebookUrl: "", instagramUrl: "", twitterUrl: "", youtubeUrl: "", websiteUrl: "",
-          collegeName: "", collegeIdNo: "", riderPhone: "", riderRegistrationId: ""
+          collegeName: "", collegeIdNo: "", riderPhone: "", riderRegistrationId: "",
+          participatingInYoga: false, participatingInRally: false, participatingInMVD2026: false,
         });
         setProfileImage(null); setProfileImagePreview(null);
         setLicenseImage(null); setLicenseImagePreview(null);
+        setSocialProfiles([{ platform: "", url: "" }]);
         setOtpSent(false);
+        setEmailVerified(false);
         setTermsAccepted(false);
+        setPhoneError("");
+        setEmailError("");
       }, 3000);
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed. Please try again.");
@@ -471,7 +587,21 @@ const UserRegistrationForm = () => {
                 <button
                   key={type.id}
                   type="button"
-                  onClick={() => setFormData((prev) => ({ ...prev, registrationType: type.id }))}
+                  onClick={() => setFormData((prev) => {
+                    if (prev.registrationType === type.id) return prev;
+                    setEmailVerified(false);
+                    setOtpSent(false);
+                    setEmailError("");
+                    setPhoneError("");
+                    return {
+                      ...prev,
+                      registrationType: type.id,
+                      participatingInYoga: false,
+                      participatingInRally: false,
+                      participatingInMVD2026: false,
+                      tshirtSize: "",
+                    };
+                  })}
                   className={`flex flex-col items-center justify-center p-3 sm:p-6 border text-center transition-all duration-300 relative overflow-hidden group ${
                     isSelected
                       ? "bg-copper/10 border-copper text-white shadow-[0_0_15px_rgba(202,138,4,0.15)]"
@@ -545,8 +675,50 @@ const UserRegistrationForm = () => {
               <h3 className="font-body text-xs uppercase tracking-[0.2em] text-copper border-b border-white/10 pb-2">Basic Info <span className="text-red-500">*</span></h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InputField label="Full Name" name="fullName" icon={User} value={formData.fullName} onChange={handleInputChange} required />
-                <InputField label="Phone Number" name="phone" icon={Phone} type="tel" value={formData.phone} onChange={handleInputChange} required />
+                <div className="space-y-1">
+                  <label className="font-body text-[10px] uppercase tracking-widest text-white font-semibold">Phone Number <span className="text-red-500">*</span></label>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={16} />
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      onBlur={handlePhoneBlur}
+                      required
+                      className={`w-full bg-carbon border pl-12 pr-4 py-4 font-body text-xs text-white outline-none focus:border-copper transition-colors ${phoneError ? "border-red-500" : "border-white/10"}`}
+                    />
+                  </div>
+                  {phoneError && (
+                    <p className="font-body text-[10px] text-red-400 flex items-center gap-1 mt-1">
+                      <AlertCircle size={12} /> {phoneError}
+                    </p>
+                  )}
+                </div>
 
+                <div className="space-y-3 md:col-span-2">
+                  <label className="font-body text-[10px] uppercase tracking-widest text-white font-semibold">Event Participation</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {[
+                      { name: "participatingInYoga", label: "Taking part in Yoga" },
+                      { name: "participatingInRally", label: "Taking part in Rally" },
+                      { name: "participatingInMVD2026", label: "Taking part in MVD 2026 Full Day Event" },
+                    ].map(({ name, label }) => (
+                      <label key={name} className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          name={name}
+                          checked={formData[name]}
+                          onChange={handleInputChange}
+                          className="mt-1 w-4 h-4 accent-copper bg-carbon border border-white/10 rounded"
+                        />
+                        <span className="font-text text-xs text-steel-dim leading-relaxed">{label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {needsTshirt && (
                 <div className="space-y-1">
                   <label className="font-body text-[10px] uppercase tracking-widest text-white font-semibold">T-Shirt Size <span className="text-red-500">*</span></label>
                   <select name="tshirtSize" value={formData.tshirtSize} onChange={handleInputChange} required className="w-full bg-carbon border border-white/10 px-6 py-4 font-body text-sm text-white outline-none focus:border-copper transition-colors appearance-none">
@@ -554,6 +726,7 @@ const UserRegistrationForm = () => {
                     {["S", "M", "L", "XL", "XXL", "XXXL"].map(bg => <option key={bg} value={bg}>{bg}</option>)}
                   </select>
                 </div>
+                )}
 
                 <div className="space-y-1">
                   <label className="font-body text-[10px] uppercase tracking-widest text-white font-semibold">Gender <span className="text-red-500">*</span></label>
@@ -565,21 +738,66 @@ const UserRegistrationForm = () => {
                   </select>
                 </div>
 
-                {!isPS && !isPublicUser && (
+                {!isPS && (
                   <>
                     <div className="space-y-1">
                       <label className="font-body text-[10px] uppercase tracking-widest text-white font-semibold">Email Address <span className="text-red-500">*</span></label>
                       <div className="flex gap-2">
                         <div className="relative flex-grow">
                           <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={16} />
-                          <input type="email" name="email" value={formData.email} onChange={handleInputChange} required disabled={otpSent && countdown > 0} className="w-full bg-carbon border border-white/10 pl-12 pr-4 py-4 font-body text-xs text-white outline-none focus:border-copper transition-colors disabled:opacity-50" />
+                          <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            onBlur={handleEmailBlur}
+                            required
+                            disabled={otpSent && countdown > 0}
+                            className={`w-full bg-carbon border pl-12 pr-4 py-4 font-body text-xs text-white outline-none focus:border-copper transition-colors disabled:opacity-50 ${emailError ? "border-red-500" : "border-white/10"}`}
+                          />
                         </div>
                         <button type="button" onClick={handleSendOtp} disabled={isSendingOtp || countdown > 0} className="px-4 bg-white/5 border border-white/10 font-body text-[10px] uppercase tracking-widest hover:bg-copper hover:text-carbon transition-all disabled:opacity-50 min-w-[90px]">
                           {isSendingOtp ? "..." : countdown > 0 ? `${countdown}s` : "SEND OTP"}
                         </button>
                       </div>
+                      {emailError && (
+                        <p className="font-body text-[10px] text-red-400 flex items-center gap-1 mt-1">
+                          <AlertCircle size={12} /> {emailError}
+                        </p>
+                      )}
                     </div>
-                    {otpSent && <InputField label="OTP" name="otp" icon={Key} value={formData.otp} onChange={handleInputChange} required />}
+                    {emailVerified && (
+                      <p className="font-body text-[10px] text-green-400 flex items-center gap-1.5">
+                        <CheckCircle size={14} /> Email Verified
+                      </p>
+                    )}
+                    {otpSent && !emailVerified && (
+                      <div className="space-y-2">
+                        <label className="font-body text-[10px] uppercase tracking-widest text-white font-semibold">OTP <span className="text-red-500">*</span></label>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <div className="relative flex-grow">
+                            <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={16} />
+                            <input
+                              type="text"
+                              name="otp"
+                              value={formData.otp}
+                              onChange={handleInputChange}
+                              required
+                              className="w-full bg-carbon border border-white/10 pl-12 pr-4 py-4 font-body text-xs text-white outline-none focus:border-copper transition-colors"
+                              placeholder="Enter 6-digit OTP"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleVerifyOtp}
+                            disabled={isVerifyingOtp || formData.otp?.length !== 6}
+                            className="px-4 py-4 bg-white/5 border border-white/10 font-body text-[10px] uppercase tracking-widest hover:bg-copper hover:text-carbon transition-all disabled:opacity-50 whitespace-nowrap"
+                          >
+                            {isVerifyingOtp ? "..." : "Verify OTP"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                     <div className="space-y-1">
                       <label className="font-body text-[10px] uppercase tracking-widest text-white font-semibold">Password <span className="text-red-500">*</span></label>
                       <div className="relative">
@@ -590,10 +808,10 @@ const UserRegistrationForm = () => {
                         </button>
                       </div>
                     </div>
+                    {isPublicUser && (
+                      <DobPicker label="Date of Birth" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleInputChange} required />
+                    )}
                   </>
-                )}
-                {isPublicUser && (
-                  <InputField label="Email Address" name="email" icon={Mail} type="email" value={formData.email} onChange={handleInputChange} required />
                 )}
               </div>
             </div>
@@ -605,6 +823,9 @@ const UserRegistrationForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <InputField label="College Name" name="collegeName" icon={GraduationCap} value={formData.collegeName} onChange={handleInputChange} required />
                   <InputField label="Student ID Number" name="collegeIdNo" icon={FileText} value={formData.collegeIdNo} onChange={handleInputChange} required />
+                  {formData.registrationType === "Student" && (
+                    <DobPicker label="Date of Birth" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleInputChange} required />
+                  )}
                 </div>
               </div>
             )}
@@ -614,7 +835,7 @@ const UserRegistrationForm = () => {
               <div className="space-y-6">
                 <h3 className="font-body text-xs uppercase tracking-[0.2em] text-copper border-b border-white/10 pb-2">Personal Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <InputField label="Date of Birth" name="dateOfBirth" icon={Calendar} type="date" value={formData.dateOfBirth} onChange={handleInputChange} required />
+                  <DobPicker label="Date of Birth" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleInputChange} required />
                   <div className="space-y-1">
                     <label className="font-body text-[10px] uppercase tracking-widest text-white font-semibold">Blood Group <span className="text-red-500">*</span></label>
                     <select name="bloodGroup" value={formData.bloodGroup} onChange={handleInputChange} required className="w-full bg-carbon border border-white/10 px-6 py-4 font-body text-sm text-white outline-none focus:border-copper transition-colors appearance-none">
@@ -631,6 +852,7 @@ const UserRegistrationForm = () => {
               <div className="space-y-6">
                 <h3 className="font-body text-xs uppercase tracking-[0.2em] text-copper border-b border-white/10 pb-2">Pillion Riding Connection</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <DobPicker label="Date of Birth" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleInputChange} required />
                   <InputField label="Associated Rider's Phone Number" name="riderPhone" icon={Phone} type="tel" value={formData.riderPhone} onChange={handleInputChange} required />
                   <InputField label="Associated Rider's BUC ID (Optional)" name="riderRegistrationId" icon={User} value={formData.riderRegistrationId} onChange={handleInputChange} />
                 </div>
@@ -708,20 +930,67 @@ const UserRegistrationForm = () => {
             )}
 
             {/* Social Presence */}
-            {!isPS && !isPublicUser && (
+            {!isPS && (
               <div className="space-y-6">
                 <h3 className="font-body text-xs uppercase tracking-[0.2em] text-copper border-b border-white/10 pb-2">Social Presence</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <InputField label="Facebook" name="facebookUrl" value={formData.facebookUrl} onChange={handleInputChange} />
-                  <InputField label="Instagram" name="instagramUrl" value={formData.instagramUrl} onChange={handleInputChange} />
-                  <InputField label="Twitter / X" name="twitterUrl" value={formData.twitterUrl} onChange={handleInputChange} />
-                  <InputField label="YouTube" name="youtubeUrl" value={formData.youtubeUrl} onChange={handleInputChange} />
-                  <InputField label="Personal Website" name="websiteUrl" value={formData.websiteUrl} onChange={handleInputChange} />
+                <p className="font-text text-xs text-steel-dim">Select a platform from the dropdown and add your profile link.</p>
+                <div className="space-y-4">
+                  {socialProfiles.map((profile, index) => (
+                    <div
+                      key={index}
+                      className={`grid grid-cols-1 gap-6 items-end ${index > 0 ? "md:grid-cols-[1fr_1fr_auto]" : "md:grid-cols-2"}`}
+                    >
+                      <div className="space-y-1">
+                        <label className="font-body text-[10px] uppercase tracking-widest text-white font-semibold">Platform</label>
+                        <div className="relative">
+                          <select
+                            value={profile.platform}
+                            onChange={(e) => handleSocialPlatformChange(index, e.target.value)}
+                            className="w-full bg-carbon border border-white/10 px-6 py-4 pr-12 font-body text-sm text-white outline-none focus:border-copper transition-colors appearance-none"
+                          >
+                            <option value="">Please select your presence</option>
+                            {SOCIAL_PLATFORMS.map((platform) => (
+                              <option key={platform.value} value={platform.value}>{platform.label}</option>
+                            ))}
+                          </select>
+                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-steel-dim pointer-events-none" size={16} />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-body text-[10px] uppercase tracking-widest text-white font-semibold">Profile Link</label>
+                        <input
+                          type="url"
+                          value={profile.url}
+                          onChange={(e) => handleSocialUrlChange(index, e.target.value)}
+                          placeholder={profile.platform ? getSocialPlaceholder(profile.platform) : "Please select your presence"}
+                          className="w-full bg-carbon border border-white/10 px-6 py-4 font-body text-xs text-white outline-none focus:border-copper transition-colors placeholder:text-white/30"
+                        />
+                      </div>
+                      {index > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSocialProfile(index)}
+                          aria-label="Remove social presence row"
+                          className="inline-flex items-center justify-center gap-1.5 px-4 py-4 bg-white/5 border border-white/10 font-body text-[10px] uppercase tracking-widest text-red-400 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-300 transition-all"
+                        >
+                          <Trash2 size={14} /> Remove
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={handleAddSocialProfile}
+                    className="inline-flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/10 font-body text-[10px] uppercase tracking-widest hover:bg-copper hover:text-carbon transition-all"
+                  >
+                    <Plus size={14} /> Add Another
+                  </button>
                 </div>
               </div>
             )}
 
-            {/* Declaration & Legal Agreement */}
+            {/* Declaration & Legal Agreement — not shown for PS */}
+            {!isPS && (
             <div className="space-y-6 bg-carbon/50 p-6 border border-white/5 rounded-small">
               <h3 className="font-body text-xs uppercase tracking-[0.2em] text-copper border-b border-white/10 pb-2 flex items-center gap-2">
                 <Shield size={14} /> Declaration & Legal Agreement
@@ -748,6 +1017,7 @@ const UserRegistrationForm = () => {
                 </label>
               </div>
             </div>
+            )}
 
             <button type="submit" disabled={isSubmitting} className="w-full md:w-auto px-16 py-6 bg-copper text-carbon font-heading text-2xl uppercase hover:bg-white transition-all duration-500 disabled:opacity-50">
               {isSubmitting ? "Processing..." : "Complete Registration"}
@@ -761,17 +1031,14 @@ const UserRegistrationForm = () => {
         onClose={() => setShowTermsModal(false)}
         title="Ride Registration"
         terms={USER_TERMS}
-        finalAcceptanceItems={[
-          "I have read and understood all terms and conditions",
-          "I voluntarily agree to abide by them",
-          "I accept full responsibility for my participation"
-        ]}
+        finalAcceptanceItems={USER_TERMS_FINAL_ACCEPTANCE}
         onAccept={() => {
           setTermsAccepted(true);
           setShowTermsModal(false);
           toast.success("Declaration accepted!");
         }}
       />
+
     </div>
   );
 };

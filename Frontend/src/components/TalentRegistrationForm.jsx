@@ -5,7 +5,14 @@ import {
   FileText, Calendar, Trophy, CheckCircle, Shield, ChevronDown, Key,
   Upload, Image as ImageIcon, Video as VideoIcon
 } from "lucide-react";
-import { talentService, clubService, otpService } from "../services/api";
+import { talentService, clubService, otpService, profileService } from "../services/api";
+import DobPicker from "./DobPicker";
+import {
+  getDuplicateEmailMessage,
+  getDuplicatePhoneMessage,
+  OTP_VERIFY_SUCCESS,
+  mapOtpVerifyError,
+} from "../constants/registrationValidationMessages";
 
 const TALENT_CATEGORIES = {
   "🎤 Performing Arts": [
@@ -42,7 +49,7 @@ const ALL_SUBCATEGORIES = Object.entries(TALENT_CATEGORIES).flatMap(([group, ite
 );
 
 const initialFormData = {
-  fullName: "", age: "", gender: "", phone: "", email: "", city: "", tshirtSize: "",
+  fullName: "", age: "", dateOfBirth: "", gender: "", phone: "", email: "", city: "", tshirtSize: "",
   talentCategory: "", subTalentDescription: "",
   experienceLevel: "", yearsOfExperience: "",
   portfolioLink: "",
@@ -64,6 +71,10 @@ const TalentRegistrationForm = () => {
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [phoneError, setPhoneError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
 
   const [talentImage, setTalentImage] = useState(null);
   const [talentVideo, setTalentVideo] = useState(null);
@@ -109,16 +120,37 @@ const TalentRegistrationForm = () => {
       toast.error("Please enter your email address first");
       return;
     }
+    if (await checkEmailDuplicate(formData.email)) {
+      return;
+    }
+    setEmailVerified(false);
     setIsSendingOtp(true);
     try {
       await otpService.send(formData.email, "talent_signup");
       setOtpSent(true);
       setCountdown(60);
-      toast.success("OTP transmission successful! Check your email.");
+      toast.success("OTP sent to your email!");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to transmit OTP code.");
+      toast.error("Unable to send OTP. Please try again.");
     } finally {
       setIsSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!formData.email || !formData.otp || formData.otp.length !== 6) {
+      return toast.error("Please enter the 6-digit OTP");
+    }
+    setIsVerifyingOtp(true);
+    try {
+      await otpService.verify(formData.email, formData.otp, "talent_signup");
+      setEmailVerified(true);
+      toast.success(OTP_VERIFY_SUCCESS);
+    } catch (err) {
+      setEmailVerified(false);
+      toast.error(mapOtpVerifyError(err.response?.data?.message));
+    } finally {
+      setIsVerifyingOtp(false);
     }
   };
 
@@ -138,9 +170,66 @@ const TalentRegistrationForm = () => {
     const { name, value, type, checked } = e.target;
     if (name === "phone") {
       setFormData(prev => ({ ...prev, [name]: value.replace(/\D/g, "").slice(0, 10) }));
+      setPhoneError("");
+    } else if (name === "email") {
+      setFormData(prev => ({ ...prev, [name]: value }));
+      setEmailError("");
+      setEmailVerified(false);
+      setOtpSent(false);
+    } else if (name === "otp") {
+      setFormData(prev => ({ ...prev, [name]: value.replace(/\D/g, "").slice(0, 6) }));
+      setEmailVerified(false);
     } else {
       setFormData(prev => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
     }
+  };
+
+  const checkEmailDuplicate = async (email) => {
+    if (!email?.trim() || !email.includes("@")) {
+      setEmailError("");
+      return false;
+    }
+    try {
+      const result = await profileService.checkEmailRegistered(email.trim(), null, "Talent");
+      if (result.registered) {
+        const msg = result.message || getDuplicateEmailMessage("Talent");
+        setEmailError(msg);
+        toast.error(msg);
+        return true;
+      }
+      setEmailError("");
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleEmailBlur = async () => {
+    await checkEmailDuplicate(formData.email);
+  };
+
+  const checkPhoneDuplicate = async (phone) => {
+    if (phone.length !== 10) {
+      setPhoneError("");
+      return false;
+    }
+    try {
+      const result = await profileService.checkPhoneRegistered(phone, null, "Talent");
+      if (result.registered) {
+        const msg = result.message || getDuplicatePhoneMessage("Talent");
+        setPhoneError(msg);
+        toast.error(msg);
+        return true;
+      }
+      setPhoneError("");
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
+  const handlePhoneBlur = async () => {
+    await checkPhoneDuplicate(formData.phone);
   };
 
   const handleGroupChange = (e) => {
@@ -152,7 +241,7 @@ const TalentRegistrationForm = () => {
     e.preventDefault();
 
     const required = [
-      "fullName", "age", "gender", "phone", "email", "city", "tshirtSize",
+      "fullName", "age", "dateOfBirth", "gender", "phone", "email", "city", "tshirtSize",
       "talentCategory", "subTalentDescription", "experienceLevel", "yearsOfExperience",
       "shortDescription", "whyParticipate", "availableDates", "otp",
     ];
@@ -161,8 +250,14 @@ const TalentRegistrationForm = () => {
         return toast.error(`Please fill in: ${field.replace(/([A-Z])/g, " $1")}`);
       }
     }
-    if (!otpSent) {
-      return toast.error("Please verify your email address with OTP first.");
+    if (!emailVerified) {
+      return toast.error("Please verify your email with OTP before submitting.");
+    }
+    if (await checkEmailDuplicate(formData.email)) {
+      return;
+    }
+    if (await checkPhoneDuplicate(formData.phone)) {
+      return;
     }
     if (!formData.consentInfoTrue || !formData.consentRules || !formData.consentMedia) {
       return toast.error("Please check all three consent checkboxes before submitting.");
@@ -185,6 +280,7 @@ const TalentRegistrationForm = () => {
       setShowSuccess(true);
       setFormData(initialFormData);
       setOtpSent(false);
+      setEmailVerified(false);
       setSelectedGroup("");
       setTalentImage(null);
       setTalentVideo(null);
@@ -329,6 +425,7 @@ const TalentRegistrationForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputField label="Full Name" name="fullName" icon={User} value={formData.fullName} onChange={handleChange} required />
             <InputField label="Age" name="age" type="number" icon={Clock} value={formData.age} onChange={handleChange} required />
+            <DobPicker label="Date of Birth" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required />
             <div className="space-y-1">
               <label className="font-body text-[10px] uppercase tracking-widest text-white font-semibold">Gender <span className="text-red-500">*</span></label>
               <select name="gender" value={formData.gender} onChange={handleChange} required className="w-full bg-carbon border border-white/10 px-4 py-4 font-body text-xs text-white outline-none focus:border-copper transition-colors appearance-none">
@@ -338,10 +435,38 @@ const TalentRegistrationForm = () => {
                 <option value="prefernottosay">Prefer not to say</option>
               </select>
             </div>
-            <InputField label="Phone Number" name="phone" type="tel" icon={Phone} value={formData.phone} onChange={handleChange} required />
+            <div className="space-y-1">
+              <label className="font-body text-[10px] uppercase tracking-widest text-white font-semibold">Phone Number <span className="text-red-500">*</span></label>
+              <div className="relative">
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={16} />
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  onBlur={handlePhoneBlur}
+                  required
+                  className={`w-full bg-carbon border pl-12 pr-4 py-4 font-body text-xs text-white outline-none focus:border-copper transition-colors ${phoneError ? "border-red-500" : "border-white/10"}`}
+                />
+              </div>
+              {phoneError && <p className="font-body text-[10px] text-red-400 mt-1">{phoneError}</p>}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end md:col-span-2">
-              <div className="md:col-span-2">
-                <InputField label="Email ID" name="email" type="email" icon={Mail} value={formData.email} onChange={handleChange} required />
+              <div className="md:col-span-2 space-y-1">
+                <label className="font-body text-[10px] uppercase tracking-widest text-white font-semibold">Email ID <span className="text-red-500">*</span></label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={16} />
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    onBlur={handleEmailBlur}
+                    required
+                    className={`w-full bg-carbon border pl-12 pr-4 py-4 font-body text-xs text-white outline-none focus:border-copper transition-colors ${emailError ? "border-red-500" : "border-white/10"}`}
+                  />
+                </div>
+                {emailError && <p className="font-body text-[10px] text-red-400 mt-1">{emailError}</p>}
               </div>
               <div className="pb-0.5">
                 <button
@@ -354,21 +479,36 @@ const TalentRegistrationForm = () => {
                 </button>
               </div>
             </div>
-            {otpSent && (
-              <div className="md:col-span-2">
-                <InputField 
-                  label="Verification Code (6-Digit OTP)" 
-                  name="otp" 
-                  type="text" 
-                  icon={Key} 
-                  value={formData.otp} 
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "").slice(0, 6);
-                    setFormData(prev => ({ ...prev, otp: val }));
-                  }} 
-                  required 
-                  placeholder="Enter 6-digit OTP code"
-                />
+            {emailVerified && (
+              <p className="md:col-span-2 font-body text-[10px] text-green-400 flex items-center gap-1.5">
+                <CheckCircle size={14} /> Email Verified
+              </p>
+            )}
+            {otpSent && !emailVerified && (
+              <div className="md:col-span-2 space-y-2">
+                <label className="font-body text-[10px] uppercase tracking-widest text-white font-semibold">OTP <span className="text-red-500">*</span></label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative flex-grow">
+                    <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-steel-dim" size={16} />
+                    <input
+                      type="text"
+                      name="otp"
+                      value={formData.otp}
+                      onChange={handleChange}
+                      required
+                      placeholder="Enter 6-digit OTP"
+                      className="w-full bg-carbon border border-white/10 pl-12 pr-4 py-4 font-body text-xs text-white outline-none focus:border-copper transition-colors"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleVerifyOtp}
+                    disabled={isVerifyingOtp || formData.otp?.length !== 6}
+                    className="px-4 py-4 bg-white/5 border border-white/10 font-body text-[10px] uppercase tracking-widest hover:bg-copper hover:text-carbon transition-all disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {isVerifyingOtp ? "..." : "Verify OTP"}
+                  </button>
+                </div>
               </div>
             )}
             <InputField label="City / Location" name="city" icon={MapPin} value={formData.city} onChange={handleChange} required />

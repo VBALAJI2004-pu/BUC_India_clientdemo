@@ -1,10 +1,7 @@
 import axios from "axios";
 
 const API_URL =
-  import.meta.env.VITE_API_URL ||
-  (import.meta.env.DEV
-    ? "http://localhost:5000/api"
-    : "https://buc-india-backend.onrender.com/api");
+  import.meta.env.VITE_API_URL || "https://api-buc-india.onrender.com/api";
 
 const api = axios.create({
   baseURL: API_URL,
@@ -162,6 +159,18 @@ export const profileService = {
     const response = await api.delete(`/profile/${id}`);
     return response.data;
   },
+  checkPhoneRegistered: async (phone, registrationType, category = "User") => {
+    const response = await api.get("/profile/phone-registered", {
+      params: { phone, registrationType, category },
+    });
+    return response.data;
+  },
+  checkEmailRegistered: async (email, registrationType, category = "User") => {
+    const response = await api.get("/profile/email-registered", {
+      params: { email, registrationType, category },
+    });
+    return response.data;
+  },
 };
 
 export const clubService = {
@@ -218,8 +227,12 @@ export const clubMembershipService = {
 };
 
 export const otpService = {
-  send: async (email, type) => {
-    const response = await api.post("/otp/send", { email, type });
+  send: async (email, type, registrationType = null) => {
+    const payload = { email, type };
+    if (registrationType) {
+      payload.registrationType = registrationType;
+    }
+    const response = await api.post("/otp/send", payload);
     return response.data;
   },
   verify: async (email, otp, type) => {
@@ -264,4 +277,62 @@ export const talentService = {
     return response.data;
   },
 };
+
+const multipartConfig = {
+  headers: { "Content-Type": "multipart/form-data" },
+};
+
+export const internationalProfileService = {
+  getPublic: async () => {
+    const response = await api.get("/international-profiles/public");
+    return response.data;
+  },
+  getAll: async () => {
+    const response = await api.get("/international-profiles");
+    return response.data;
+  },
+  create: async (formData) => {
+    const response = await api.post("/international-profiles", formData, multipartConfig);
+    return response.data;
+  },
+  update: async (id, formData) => {
+    const response = await api.put(`/international-profiles/${id}`, formData, multipartConfig);
+    return response.data;
+  },
+  delete: async (id) => {
+    const response = await api.delete(`/international-profiles/${id}`);
+    return response.data;
+  },
+};
+
+export const safetyInfluencerService = {
+  getPublic: async () => {
+    const response = await api.get("/safety-influencers/public");
+    return response.data;
+  },
+  getAll: async () => {
+    const response = await api.get("/safety-influencers");
+    return response.data;
+  },
+  create: async (formData) => {
+    const response = await api.post("/safety-influencers", formData, multipartConfig);
+    return response.data;
+  },
+  update: async (id, formData) => {
+    const response = await api.put(`/safety-influencers/${id}`, formData, multipartConfig);
+    return response.data;
+  },
+  delete: async (id) => {
+    const response = await api.delete(`/safety-influencers/${id}`);
+    return response.data;
+  },
+};
+
+export const membersService = {
+  getPublic: async () => {
+    const response = await api.get("/members/public");
+    return response.data;
+  },
+};
+
 export default api;

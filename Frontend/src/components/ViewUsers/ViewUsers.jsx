@@ -101,7 +101,11 @@ const ViewUsers = () => {
     { key: "registrationType", label: "Registration Type", width: "140px" },
     { key: "fullName", label: "Full Name", width: "150px" },
     { key: "phone", label: "Phone Number", width: "120px" },
+    { key: "participatingInYoga", label: "Yoga", width: "80px" },
+    { key: "participatingInRally", label: "Rally", width: "80px" },
+    { key: "participatingInMVD2026", label: "MVD 2026", width: "90px" },
     { key: "email", label: "Email Address", width: "180px" },
+    { key: "tshirtSize", label: "T-Shirt Size", width: "110px" },
     { key: "collegeName", label: "College Name", width: "150px" },
     { key: "collegeIdNo", label: "Student ID Number", width: "140px" },
     { key: "dateOfBirth", label: "Date of Birth", width: "110px" },
@@ -190,6 +194,17 @@ const ViewUsers = () => {
       );
     }
     const value = user[column.key];
+    if (column.key === "email") {
+      if (value === null || value === undefined || value === "") return "-";
+      return String(value);
+    }
+    if (
+      column.key === "participatingInYoga" ||
+      column.key === "participatingInRally" ||
+      column.key === "participatingInMVD2026"
+    ) {
+      return value === true ? "Yes" : "No";
+    }
     if (column.key === "profileImage" || column.key === "licenseImage") {
       if (!value) return "-";
       return (
@@ -198,7 +213,7 @@ const ViewUsers = () => {
         </a>
       );
     }
-    if (column.key.toLowerCase().includes("date") || column.key.toLowerCase().includes("at")) {
+    if (column.key === "dateOfBirth" || column.key === "createdAt" || column.key === "updatedAt") {
       if (value) {
         try {
           const date = new Date(value);

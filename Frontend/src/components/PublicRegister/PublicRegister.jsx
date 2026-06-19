@@ -359,7 +359,7 @@ const PublicRegister = () => {
       <div className="register-container">
         <button
           className="back-btn-float"
-          onClick={() => navigate("/register")}
+          onClick={() => navigate("/register/june-21-event")}
           title="Back to home"
         >
           <X size={24} />
@@ -1009,7 +1009,7 @@ const PublicRegister = () => {
             <div className="form-actions mt-8">
               <button
                 type="button"
-                onClick={() => navigate(`/register/${slug || "community"}`)}
+                onClick={() => navigate(`/register/${slug || "june-21-event"}`)}
                 className="btn-secondary"
                 disabled={submitting}
               >
@@ -1068,7 +1068,7 @@ const PublicRegister = () => {
             <button
               onClick={() => {
                 setShowSuccessOverlay(false);
-                navigate(`/register/${slug || "community"}`);
+                navigate(`/register/${slug || "june-21-event"}`);
               }}
               className="w-full bg-white text-black py-4 rounded-xl font-bold text-lg hover:bg-gray-200 transition-all shadow-xl"
             >

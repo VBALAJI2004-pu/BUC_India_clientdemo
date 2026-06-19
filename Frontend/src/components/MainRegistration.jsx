@@ -1,8 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import UserRegistrationForm from "./UserRegistrationForm";
 import TalentRegistrationForm from "./TalentRegistrationForm";
 import ClubCollaborate from "./Clubs/ClubCollaborate";
+import TermsModal from "./TermsModal";
+import BackButton from "./BackButton";
+import {
+  USER_TERMS,
+  USER_TERMS_FINAL_ACCEPTANCE,
+} from "../constants/userRegistrationTerms";
 import { User, Shield, Star, Heart, Calendar, ArrowRight } from "lucide-react";
 import { galleryService, eventService } from "../services/api";
 
@@ -11,6 +18,8 @@ const MainRegistration = () => {
   const [activeTab, setActiveTab] = useState("user");
   const [coverPhoto, setCoverPhoto] = useState(null);
   const [event, setEvent] = useState(null);
+  const [volunteerTermsAccepted, setVolunteerTermsAccepted] = useState(false);
+  const [showVolunteerTermsModal, setShowVolunteerTermsModal] = useState(false);
 
   const loadEventAndCover = useCallback(async () => {
     // 1. Fetch general cover photo
@@ -34,17 +43,16 @@ const MainRegistration = () => {
     try {
       const allEvents = await eventService.getAll();
       const slugify = (text) => text.toString().toLowerCase()
-        .replace(/\s+/g, '-')           // Replace spaces with -
-        .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
-        .replace(/\-\-+/g, '-')         // Replace multiple - with single -
-        .replace(/^-+/, '')             // Trim - from start
-        .replace(/-+$/, '');            // Trim - from end
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
 
       const found = allEvents.find((e) => slugify(e.title) === currentSlug || e._id === currentSlug);
       if (found) {
         setEvent(found);
       } else {
-        // Fallback title parsed from slug
         const formattedTitle = currentSlug
           .split('-')
           .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -60,20 +68,33 @@ const MainRegistration = () => {
     loadEventAndCover();
   }, [slug, loadEventAndCover]);
 
+  const handleVolunteerRegisterClick = (e) => {
+    if (!volunteerTermsAccepted) {
+      e.preventDefault();
+      toast.error("Please accept the Declaration & Legal Agreement to proceed.");
+    }
+  };
+
+  const isMembership = !slug;
+  const eventId = event?._id || slug || "community";
+
   return (
     <div className="min-h-screen bg-carbon text-white relative">
       {/* BUC India Brand Top Bar */}
       <div className="w-full bg-carbon-light border-b border-white/5 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/logo.jpg" alt="BUC India" className="w-10 h-10 rounded-full border border-copper/30 object-cover" />
-            <div className="flex flex-col leading-none">
-              <span className="font-heading text-lg uppercase tracking-widest text-white">BUC India</span>
-              <span className="font-body text-[9px] uppercase tracking-[0.25em] text-copper">Bikers Unity Calls</span>
+        <div className="max-w-7xl mx-auto px-6 md:px-12 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 sm:gap-6">
+            <BackButton label="Back" />
+            <div className="flex items-center gap-3">
+              <img src="/logo.jpg" alt="BUC India" className="w-10 h-10 rounded-full border border-copper/30 object-cover" />
+              <div className="flex flex-col leading-none">
+                <span className="font-heading text-lg uppercase tracking-widest text-white">BUC India</span>
+                <span className="font-body text-[9px] uppercase tracking-[0.25em] text-copper">Bikers Unity Calls</span>
+              </div>
             </div>
           </div>
           <span className="hidden sm:block font-body text-[10px] uppercase tracking-[0.3em] text-steel-dim">
-            Registration Portal
+            {isMembership ? "Membership Portal" : "Registration Portal"}
           </span>
         </div>
       </div>
@@ -83,10 +104,11 @@ const MainRegistration = () => {
         <img 
           src={coverPhoto || '/bg_images/WhatsApp%20Image%202026-06-11%20at%2010.45.18%20AM.jpeg'} 
           alt="Event Banner" 
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-contain transition-transform duration-1000 transform hover:scale-102"
           style={{ opacity: 0.95 }}
         />
-        {/* Subtle overlay gradient at the very bottom to blend with the carbon background without covering content */}
         <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-carbon to-transparent pointer-events-none" />
       </div>
 
@@ -94,7 +116,11 @@ const MainRegistration = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h1 className="font-heading text-5xl md:text-7xl uppercase mb-4">
-              Registration <span className="text-transparent outline-title">Portal</span>
+              {isMembership ? (
+                <>Membership <span className="text-transparent outline-title">Application</span></>
+              ) : (
+                <>Registration <span className="text-transparent outline-title">Portal</span></>
+              )}
             </h1>
             {event ? (
               <div className="inline-flex items-center gap-2 px-5 py-2 bg-copper/10 border border-copper/30 rounded-full text-copper font-body text-xs tracking-wider uppercase">
@@ -102,7 +128,9 @@ const MainRegistration = () => {
               </div>
             ) : (
               <p className="font-text text-steel-dim text-lg max-w-2xl mx-auto leading-relaxed">
-                Select the type of registration below. Join as a rider, showcase your talent, partner your club, or volunteer with humanity calls.
+                {isMembership
+                  ? "Apply to join the BUC India brotherhood. Complete your profile to become part of one nation, one brotherhood."
+                  : "Select the type of registration below. Join as a rider, showcase your talent, partner your club, or volunteer with humanity calls."}
               </p>
             )}
           </div>
@@ -160,7 +188,7 @@ const MainRegistration = () => {
           <div className="transition-all duration-500">
             {activeTab === "user" && (
               <div className="animate-fade-in">
-                <UserRegistrationForm />
+                <UserRegistrationForm eventId={eventId} />
               </div>
             )}
             {activeTab === "talent" && (
@@ -180,11 +208,39 @@ const MainRegistration = () => {
                 <p className="font-text text-steel-dim text-lg md:text-xl max-w-3xl mx-auto leading-relaxed mb-10">
                   Serving those in need through emergency blood support, uplifting the underprivileged, and protecting our animal companions nationwide.
                 </p>
+
+                <div className="w-full max-w-2xl mb-10 bg-carbon/50 p-6 border border-white/5 rounded-small text-left">
+                  <h3 className="font-body text-xs uppercase tracking-[0.2em] text-copper border-b border-white/10 pb-2 flex items-center gap-2 mb-4">
+                    <Shield size={14} /> Declaration & Legal Agreement
+                  </h3>
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      id="acceptVolunteerTerms"
+                      checked={volunteerTermsAccepted}
+                      onChange={(e) => setVolunteerTermsAccepted(e.target.checked)}
+                      className="mt-1 w-4 h-4 accent-copper bg-carbon border border-white/10 rounded cursor-pointer"
+                    />
+                    <label htmlFor="acceptVolunteerTerms" className="font-text text-xs text-steel-dim leading-relaxed cursor-pointer select-none">
+                      I confirm that I have read and understood all{" "}
+                      <button
+                        type="button"
+                        onClick={() => setShowVolunteerTermsModal(true)}
+                        className="text-copper hover:underline hover:text-white transition-all font-semibold"
+                      >
+                        Terms and Conditions
+                      </button>
+                      , voluntarily agree to abide by them, and accept full responsibility for my participation. <span className="text-red-500">*</span>
+                    </label>
+                  </div>
+                </div>
+
                 <a 
                   href="https://humanitycalls.org/volunteer" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-3 px-8 py-4 bg-copper text-carbon font-heading text-lg md:text-xl uppercase hover:bg-white transition-all duration-300"
+                  onClick={handleVolunteerRegisterClick}
+                  className={`inline-flex items-center gap-3 px-8 py-4 bg-copper text-carbon font-heading text-lg md:text-xl uppercase hover:bg-white transition-all duration-300 ${!volunteerTermsAccepted ? "opacity-50 pointer-events-none" : ""}`}
                 >
                   Register as Volunteer <ArrowRight size={20} />
                 </a>
@@ -193,6 +249,19 @@ const MainRegistration = () => {
           </div>
         </div>
       </div>
+
+      <TermsModal
+        isOpen={showVolunteerTermsModal}
+        onClose={() => setShowVolunteerTermsModal(false)}
+        title="Ride Registration"
+        terms={USER_TERMS}
+        finalAcceptanceItems={USER_TERMS_FINAL_ACCEPTANCE}
+        onAccept={() => {
+          setVolunteerTermsAccepted(true);
+          setShowVolunteerTermsModal(false);
+          toast.success("Declaration accepted!");
+        }}
+      />
     </div>
   );
 };

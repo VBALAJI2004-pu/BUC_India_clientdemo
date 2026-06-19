@@ -19,6 +19,9 @@ import certificateRoutes from "./routes/certificateRoutes.js";
 import otpRoutes from "./routes/otpRoutes.js";
 import userAuthRoutes from "./routes/userAuthRoutes.js";
 import talentRoutes from "./routes/talentRoutes.js";
+import internationalProfileRoutes from "./routes/internationalProfileRoutes.js";
+import safetyInfluencerRoutes from "./routes/safetyInfluencerRoutes.js";
+import memberRoutes from "./routes/memberRoutes.js";
 
 const app = express();
 
@@ -139,6 +142,9 @@ app.use("/api/certificates", certificateRoutes);
 app.use("/api/otp", otpRoutes);
 app.use("/api/user-auth", userAuthRoutes);
 app.use("/api/talent", talentRoutes);
+app.use("/api/international-profiles", internationalProfileRoutes);
+app.use("/api/safety-influencers", safetyInfluencerRoutes);
+app.use("/api/members", memberRoutes);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

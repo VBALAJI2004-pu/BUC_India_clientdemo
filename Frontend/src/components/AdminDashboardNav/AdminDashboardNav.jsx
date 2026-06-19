@@ -19,7 +19,9 @@ import {
   ChevronLeft,
   User,
   Bell,
-  Star
+  Star,
+  Globe,
+  Shield
 } from "lucide-react";
 import DashboardHome from "../DashboardHome/DashboardHome";
 import EventManagement from "../EventManagement/EventManagement";
@@ -28,9 +30,11 @@ import ViewUsers from "../ViewUsers/ViewUsers.jsx";
 import GalleryManagement from "../GalleryManagement.jsx";
 import ClubManagement from "../ClubManagement/ClubManagement.jsx";
 import ViewTalents from "../ViewTalents/ViewTalents.jsx";
+import InternationalProfileManagement from "../InternationalProfileManagement/InternationalProfileManagement.jsx";
+import SafetyInfluencerManagement from "../SafetyInfluencerManagement/SafetyInfluencerManagement.jsx";
 import { authService, profileService } from "../../services/api";
 
-const logo = "/logo copy copy.jpg";
+const logo = "/logo.jpg";
 const DRAWER_WIDTH = 260;
 const DRAWER_WIDTH_COLLAPSED = 80;
 
@@ -76,6 +80,8 @@ const AdminDashboard = () => {
     { path: "/admin/gallery", name: "Gallery", icon: <ImageIcon size={20} /> },
     { path: "/admin/cover-photo", name: "Cover Photo", icon: <ImageIcon size={20} /> },
     { path: "/admin/clubs", name: "Clubs", icon: <Bike size={20} /> },
+    { path: "/admin/international-profiles", name: "International Profiles", icon: <Globe size={20} /> },
+    { path: "/admin/safety-influencers", name: "Safety Influencers", icon: <Shield size={20} /> },
   ];
 
   const SidebarContent = () => (
@@ -244,6 +250,8 @@ const AdminDashboard = () => {
             <Route path="gallery" element={<GalleryManagement />} />
             <Route path="cover-photo" element={<GalleryManagement isCoverOnly={true} />} />
             <Route path="clubs" element={<ClubManagement />} />
+            <Route path="international-profiles" element={<InternationalProfileManagement />} />
+            <Route path="safety-influencers" element={<SafetyInfluencerManagement />} />
           </Routes>
         </main>
       </div>

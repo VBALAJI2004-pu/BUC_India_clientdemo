@@ -6,10 +6,7 @@ import {
   Twitter, 
   Globe, 
   Mail, 
-  Phone, 
-  MapPin, 
   ArrowUpRight,
-  ShieldAlert,
   AlertTriangle,
   HeartPulse,
   Baby
@@ -50,7 +47,6 @@ const Footer = () => {
     { name: "Emergency", number: "112", icon: AlertTriangle, color: "text-red-500" },
     { name: "Medical", number: "108", icon: HeartPulse, color: "text-rose-400" },
     { name: "Child Info", number: "1098", icon: Baby, color: "text-sky-400" },
-    { name: "Unity Core", number: "+91 88677 18080", icon: ShieldAlert, color: "text-copper" },
   ];
 
   const navigationLinks = [
@@ -137,12 +133,6 @@ const Footer = () => {
                   </a>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <span className="text-[11px] text-copper font-bold tracking-[0.2em]">CONTACT</span>
-                  <a href="tel:+918867718080" className="group text-steel-dim hover:text-white transition-colors text-[16px] font-heading tracking-wider">
-                    +91 88677 18080
-                  </a>
-                </div>
-                <div className="flex flex-col gap-2">
                   <span className="text-[11px] text-copper font-bold tracking-[0.2em]">BASE</span>
                   <div className="text-steel-dim text-[14px] tracking-wider uppercase leading-relaxed">
                     Bengaluru, Karnataka<br />India 560001
@@ -166,7 +156,7 @@ const Footer = () => {
         </div>
 
         {/* Strategic Emergency Manifest */}
-        <div className="p-6 sm:p-8 border border-white/5 bg-carbon/80 backdrop-blur-md rounded-sm grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 relative overflow-hidden">
+        <div className="p-6 sm:p-8 border border-white/5 bg-carbon/80 backdrop-blur-md rounded-sm grid grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 relative overflow-hidden">
           {emergencyContacts.map((contact, i) => (
             <a 
               key={i} 

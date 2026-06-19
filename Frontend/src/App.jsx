@@ -5,7 +5,7 @@ import {
   Navigate,
   Outlet,
 } from "react-router-dom";
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import { ToastContainer } from "react-toastify";
@@ -15,13 +15,10 @@ import SmoothScroll from "./components/animations/SmoothScroll.jsx";
 import Preloader from "./components/animations/Preloader.jsx";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
-import Hero from "./components/Hero.jsx";
-import About from "./components/About.jsx";
-import Marquee from "./components/Marquee.jsx";
-import StatsStrip from "./components/StatsStrip.jsx";
-import Safety from "./components/Safety.jsx";
 import PublicRoute from "./components/PublicRoute.jsx";
 import UserProtectedRoute from "./components/UserProtectedRoute.jsx";
+
+const HomePage = lazy(() => import("./components/HomePage.jsx"));
 
 const Events = lazy(() => import("./components/PublicHome/PublicHome.jsx"));
 const Gallery = lazy(() => import("./components/Gallery.jsx"));
@@ -51,18 +48,6 @@ const Loading = () => (
   </div>
 );
 
-function HomePage() {
-  return (
-    <>
-      <Hero />
-      <Marquee />
-      <About />
-      <StatsStrip />
-      <Safety />
-    </>
-  );
-}
-
 function PublicLayout({ isLoading }) {
   return (
     <>
@@ -72,6 +57,8 @@ function PublicLayout({ isLoading }) {
     </>
   );
 }
+
+const MemoizedPublicLayout = memo(PublicLayout);
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -142,7 +129,7 @@ function App() {
                 />
 
                 {/* Public website */}
-                <Route element={<PublicLayout isLoading={isLoading} />}>
+                <Route element={<MemoizedPublicLayout isLoading={isLoading} />}>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/events" element={<Events />} />
                   <Route path="/gallery" element={<Gallery />} />
